@@ -1,0 +1,17 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
+	<metadata minClientVersion="2.6">
+		<id>DataBooster.PSWebApi</id>
+		<version>$version$</version>
+		<title>$title$</title>
+		<authors>$author$</authors>
+		<owners>https://pswebapi.codeplex.com/</owners>
+		<licenseUrl>https://pswebapi.codeplex.com/license</licenseUrl>
+		<projectUrl>https://github.com/DataBooster/PS-WebApi</projectUrl>
+		<requireLicenseAcceptance>false</requireLicenseAcceptance>
+		<description>$description$</description>
+		<releaseNotes>https://github.com/DataBooster/PS-WebApi/releases</releaseNotes>
+		<copyright>Copyright 2016 Abel Cheng</copyright>
+		<tags>PowerShell ASP.NET Web API JSON XML CSV Text Html REST APIs</tags>
+	</metadata>
+</package>

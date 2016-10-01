@@ -1,0 +1,42 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2013
+VisualStudioVersion = 12.0.40629.0
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{B2A5B5C8-09F1-4E4A-B472-1097BED74FD5}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DataBooster.PSWebApi", "src\DataBooster.PSWebApi\DataBooster.PSWebApi.csproj", "{3322EF0A-2423-4097-A492-BDB828AC759C}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".nuget", ".nuget", "{5485E12B-E700-47F5-B104-EEEA9F2281B3}"
+	ProjectSection(SolutionItems) = preProject
+		.nuget\NuGet.Config = .nuget\NuGet.Config
+		.nuget\NuGet.exe = .nuget\NuGet.exe
+		.nuget\NuGet.targets = .nuget\NuGet.targets
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "NuGet", "NuGet", "{8DE869FA-9860-4C54-9B21-FB1C01CD8963}"
+	ProjectSection(SolutionItems) = preProject
+		src\DataBooster.PSWebApi\DataBooster.PSWebApi.nuspec = src\DataBooster.PSWebApi\DataBooster.PSWebApi.nuspec
+		src\NuGet\Pack.bat = src\NuGet\Pack.bat
+		src\NuGet\Push.bat = src\NuGet\Push.bat
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{3322EF0A-2423-4097-A492-BDB828AC759C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3322EF0A-2423-4097-A492-BDB828AC759C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3322EF0A-2423-4097-A492-BDB828AC759C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3322EF0A-2423-4097-A492-BDB828AC759C}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{3322EF0A-2423-4097-A492-BDB828AC759C} = {B2A5B5C8-09F1-4E4A-B472-1097BED74FD5}
+		{8DE869FA-9860-4C54-9B21-FB1C01CD8963} = {B2A5B5C8-09F1-4E4A-B472-1097BED74FD5}
+	EndGlobalSection
+EndGlobal
