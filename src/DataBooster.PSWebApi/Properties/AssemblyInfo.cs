@@ -6,7 +6,7 @@ using System.Runtime.InteropServices;
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
 [assembly: AssemblyTitle("PowerShell-WebApi")]
-[assembly: AssemblyDescription("Let PowerShell Script serve as WebAPI. PSWebApi is a simple library for building ASP.NET Web APIs (RESTful Services) by PowerShell Scripts out of the box.")]
+[assembly: AssemblyDescription("Let PowerShell Script serve as WebApi! PSWebApi is a simple library for building ASP.NET Web APIs (RESTful Services) by PowerShell Scripts out of the box.")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("Abel Cheng")]
 [assembly: AssemblyProduct("DataBooster.PSWebApi")]

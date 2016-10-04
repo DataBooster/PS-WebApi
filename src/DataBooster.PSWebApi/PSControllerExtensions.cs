@@ -7,9 +7,10 @@ using System.Xml;
 using System.Net;
 using System.Text;
 using System.Linq;
-using System.Web.Http;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using System.Web.Http;
+using System.Web.Http.Controllers;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Management.Automation;
@@ -164,6 +165,27 @@ namespace DataBooster.PSWebApi
 				else
 					psCommand.AddParameter(kvp.Key, kvp.Value);
 			}
+		}
+
+		public static string GetUserName(this ApiController apiController)
+		{
+			if (apiController == null)
+				throw new ArgumentNullException("apiController");
+
+			if (apiController.User == null || apiController.User.Identity == null)
+				return null;
+
+			return apiController.User.Identity.Name;
+		}
+
+		public static string GetUserName(this HttpActionContext actionContext)
+		{
+			ApiController apiController = actionContext.ControllerContext.Controller as ApiController;
+
+			if (apiController == null)
+				throw new ArgumentNullException("actionContext.ControllerContext.Controller");
+
+			return GetUserName(apiController);
 		}
 	}
 }
