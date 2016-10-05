@@ -6,7 +6,7 @@ using System.Runtime.InteropServices;
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
 [assembly: AssemblyTitle("PSWebApi.OwinSample")]
-[assembly: AssemblyDescription("")]
+[assembly: AssemblyDescription("An example ASP.NET Web API Server of PSWebApi. https://github.com/DataBooster/PS-WebApi")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
 [assembly: AssemblyProduct("PSWebApi.OwinSample")]
