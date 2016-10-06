@@ -1,8 +1,7 @@
 ﻿// Copyright (c) 2016 Abel Cheng <abelcys@gmail.com>. Licensed under the MIT license.
 // Repository: https://pswebapi.codeplex.com/, https://github.com/DataBooster/PS-WebApi
 
-using System;
-using System.Text;
+using System.Linq;
 using System.Net.Http.Formatting;
 
 namespace DataBooster.PSWebApi
@@ -10,7 +9,7 @@ namespace DataBooster.PSWebApi
 	/// <summary>
 	/// <see cref="MediaTypeFormatter"/> class to handle PowerShell supported output formats. Such as JSON, XML, CSV, HTML, String, etc.
 	/// </summary>
-	public class PSMediaTypeFormatter : MediaTypeFormatter
+	public class PSMediaTypeFormatter : JsonMediaTypeFormatter
 	{
 		private readonly PSConfiguration _psConfiguration;
 		public PSConfiguration Configuration { get { return _psConfiguration; } }
@@ -27,36 +26,13 @@ namespace DataBooster.PSWebApi
 			{
 				foreach (var mediaType in converter.MediaTypes)
 				{
-					SupportedMediaTypes.Add(mediaType);
+					if (!SupportedMediaTypes.Any(t => t.MediaType.Equals(mediaType.MediaType)))
+						SupportedMediaTypes.Add(mediaType);
 
 					if (!string.IsNullOrWhiteSpace(converter.UriPathExtension))
 						this.AddUriPathExtensionMapping(converter.UriPathExtension, mediaType);
 				}
 			}
-
-			// Set default supported character encodings
-			SupportedEncodings.Add(new UTF8Encoding(encoderShouldEmitUTF8Identifier: false, throwOnInvalidBytes: true));
-			SupportedEncodings.Add(new UnicodeEncoding(bigEndian: false, byteOrderMark: true, throwOnInvalidBytes: true));
-		}
-
-		/// <summary>
-		/// Determines whether this <see cref="PSMediaTypeFormatter"/> can read objects of the specified <paramref name="type"/>.
-		/// </summary>
-		/// <param name="type">The <see cref="Type"/> of object that will be read.</param>
-		/// <returns><c>true</c> if objects of this <paramref name="type"/> can be read, otherwise <c>false</c>.</returns>
-		public override bool CanReadType(Type type)
-		{
-			return false;
-		}
-
-		/// <summary>
-		/// Determines whether this <see cref="PSMediaTypeFormatter"/> can write objects of the specified <paramref name="type"/>.
-		/// </summary>
-		/// <param name="type">The <see cref="Type"/> of object that will be written.</param>
-		/// <returns><c>true</c> if objects of this <paramref name="type"/> can be written, otherwise <c>false</c>. Only string type can be written.</returns>
-		public override bool CanWriteType(Type type)
-		{
-			return type == typeof(string);
 		}
 	}
 }

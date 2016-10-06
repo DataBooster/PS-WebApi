@@ -187,5 +187,13 @@ namespace DataBooster.PSWebApi
 
 			return GetUserName(apiController);
 		}
+
+		public static object GetRouteData(this HttpActionContext actionContext, string urlPlaceholderName)
+		{
+			if (string.IsNullOrWhiteSpace(urlPlaceholderName))
+				throw new ArgumentNullException("urlPlaceholder");
+
+			return actionContext.ControllerContext.RouteData.Values[urlPlaceholderName];
+		}
 	}
 }

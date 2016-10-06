@@ -11,7 +11,7 @@ namespace PSWebApi.OwinSample
 		protected override bool IsAuthorized(HttpActionContext actionContext)
 		{
 			string user = actionContext.GetUserName();
-			string script = actionContext.ActionArguments["script"] as string;
+			string script = actionContext.GetRouteData("script") as string;
 
 			return CheckPrivilege(script, user);
 		}

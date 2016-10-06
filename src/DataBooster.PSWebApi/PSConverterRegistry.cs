@@ -5,13 +5,14 @@ using System;
 using System.Linq;
 using System.Net.Http.Headers;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 
 namespace DataBooster.PSWebApi
 {
 	public class PSConverterRegistry
 	{
 		private readonly List<MediaTypeHeaderValue> _mediaTypes;
-		public List<MediaTypeHeaderValue> MediaTypes { get { return _mediaTypes; } }
+		public Collection<MediaTypeHeaderValue> MediaTypes { get; private set; }
 
 		private readonly string _uriPathExtension;
 		public string UriPathExtension { get { return _uriPathExtension; } }
@@ -35,6 +36,7 @@ namespace DataBooster.PSWebApi
 				_mediaTypes = mediaTypes.ToList();
 				if (_mediaTypes.Count == 0)
 					throw new ArgumentNullException("mediaTypes");
+				MediaTypes = new Collection<MediaTypeHeaderValue>(_mediaTypes);
 			}
 
 			_uriPathExtension = (uriPathExtension == null) ? string.Empty : uriPathExtension.Trim();

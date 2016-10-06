@@ -4,14 +4,15 @@
 using System;
 using System.Linq;
 using System.Net.Http.Headers;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 
 namespace DataBooster.PSWebApi
 {
 	public class PSConfiguration
 	{
-		private readonly Collection<PSConverterRegistry> _supportedConverters;
-		public Collection<PSConverterRegistry> SupportedConverters { get { return _supportedConverters; } }
+		private readonly List<PSConverterRegistry> _supportedConverters;
+		public Collection<PSConverterRegistry> SupportedConverters { get; private set; }
 
 		private readonly PSConverterRegistry _jsonConverter;
 		public PSConverterRegistry JsonConverter { get { return _jsonConverter; } }
@@ -36,7 +37,8 @@ namespace DataBooster.PSWebApi
 
 		public PSConfiguration(bool supportJson = true, bool supportXml = true, bool supportCsv = true, bool supportHtml = true, bool supportText = true, bool supportString = true)
 		{
-			_supportedConverters = new Collection<PSConverterRegistry>();
+			_supportedConverters = new List<PSConverterRegistry>();
+			SupportedConverters = new Collection<PSConverterRegistry>(_supportedConverters);
 
 			if (supportJson)
 			{
@@ -64,13 +66,13 @@ namespace DataBooster.PSWebApi
 
 			if (supportText)
 			{
-				_textConverter = new PSConverterRegistry(new string[] { "text/plain" }, "text", "Out-String");
+				_textConverter = new PSConverterRegistry(new string[] { "text/plain" }, "string", "Out-String");
 				_supportedConverters.Add(_textConverter);
 			}
 
 			if (supportString)
 			{
-				_stringConverter = new PSConverterRegistry(new string[] { "application/string" }, "string", string.Empty);
+				_stringConverter = new PSConverterRegistry(new string[] { "application/string" }, "str", string.Empty);		// .ToString()
 				_supportedConverters.Add(_stringConverter);
 			}
 
