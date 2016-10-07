@@ -60,7 +60,8 @@ namespace DataBooster.PSWebApi
 
 				responseContent.Headers.SetContentHeader(ps.Streams);
 
-				return new HttpResponseMessage(string.IsNullOrEmpty(stringResult) ? HttpStatusCode.NoContent : HttpStatusCode.OK) { Content = responseContent };
+				return new HttpResponseMessage(ps.HadErrors ? HttpStatusCode.InternalServerError :
+					(string.IsNullOrEmpty(stringResult) ? HttpStatusCode.NoContent : HttpStatusCode.OK)) { Content = responseContent };
 			}
 		}
 

@@ -2,6 +2,7 @@
 // Repository: https://pswebapi.codeplex.com/, https://github.com/DataBooster/PS-WebApi
 
 using System.Linq;
+using System.Net.Http.Headers;
 using System.Net.Http.Formatting;
 
 namespace DataBooster.PSWebApi
@@ -33,6 +34,9 @@ namespace DataBooster.PSWebApi
 						this.AddUriPathExtensionMapping(converter.UriPathExtension, mediaType);
 				}
 			}
+
+			// Solving the 415 issue for GET request without Content-Type and Content-Length: 0
+			SupportedMediaTypes.Add(new MediaTypeHeaderValue("application/octet-stream"));
 		}
 	}
 }
