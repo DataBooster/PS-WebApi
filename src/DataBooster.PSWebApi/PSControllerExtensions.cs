@@ -18,7 +18,7 @@ using System.Management.Automation.Runspaces;
 
 namespace DataBooster.PSWebApi
 {
-	public static class PSControllerExtensions
+	public static partial class PSControllerExtensions
 	{
 		private static readonly RunspacePool _runspacePool;
 		private static readonly string _escapedNewLine;
@@ -29,6 +29,8 @@ namespace DataBooster.PSWebApi
 			_runspacePool.Open();
 			_escapedNewLine = Uri.EscapeDataString(Environment.NewLine).ToLower();
 		}
+
+		#region PowerShell
 
 		public static IEnumerable<KeyValuePair<string, object>> GatherInputParameters(this HttpRequestMessage request, IDictionary<string, object> parametersFromBody)
 		{
@@ -196,5 +198,7 @@ namespace DataBooster.PSWebApi
 
 			return actionContext.ControllerContext.RouteData.Values[urlPlaceholderName];
 		}
+
+		#endregion
 	}
 }
