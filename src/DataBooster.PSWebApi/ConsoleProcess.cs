@@ -8,11 +8,14 @@ using System.Linq;
 using System.Threading;
 using System.Diagnostics;
 using System.Collections.Generic;
+using System.Text.RegularExpressions;
 
 namespace DataBooster.PSWebApi
 {
 	public class ConsoleProcess : IDisposable
 	{
+		private static readonly Regex _rgxNoneedQuotes = new Regex(@"^((\\\S|\\$|[^""\s\\])|(""(\\.|""""|[^""\\])*""))+$");
+		private static readonly Regex _rgxEscapeBackslash = new Regex(@"(\\+)(?=""|$)");
 		private readonly ProcessStartInfo _processStartInfo;
 
 		public Encoding OutputEncoding
@@ -41,8 +44,8 @@ namespace DataBooster.PSWebApi
 			_started = _disposed = false;
 		}
 
-		public ConsoleProcess(string filePath, IEnumerable<string> args)
-			: this(filePath, JoinArguments(args))
+		public ConsoleProcess(string filePath, IEnumerable<string> args, bool forceArgumentQuote = false)
+			: this(filePath, JoinArguments(args, forceArgumentQuote))
 		{
 		}
 
@@ -69,23 +72,25 @@ namespace DataBooster.PSWebApi
 			return _process.StandardError.ReadToEnd();
 		}
 
-		private static string JoinArguments(IEnumerable<string> args)
+		private static string JoinArguments(IEnumerable<string> args, bool forceQuote = false)
 		{
 			if (args == null)
 				return null;
 
-			return string.Join(" ", args.Where(s => s != null).Select(a => EscapeArgument(a)));
+			return string.Join(" ", args.Select(a => EscapeArgument(a, forceQuote)));
 		}
 
-		private static string EscapeArgument(string arg)
+		private static string EscapeArgument(string arg, bool forceQuote = false)
 		{
 			if (string.IsNullOrWhiteSpace(arg))
-				return "\"" + arg + "\"";
+				return "\"" + (arg ?? string.Empty) + "\"";
 
-			if (arg.Length > 1 && arg[0] == '"' && arg[arg.Length - 1] == '"')
+			if (forceQuote == false && _rgxNoneedQuotes.IsMatch(arg))
 				return arg;
 
-			return arg;
+			string escArg = _rgxEscapeBackslash.Replace(arg, m => m.Groups[1].Value + m.Groups[1].Value);
+
+			return "\"" + escArg.Replace("\"", "\\\"") + "\"";
 		}
 
 		#region IDisposable Members
