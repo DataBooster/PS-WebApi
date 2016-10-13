@@ -1,4 +1,5 @@
 ﻿using System.Configuration;
+using System.Globalization;
 using WebServer = System.Web.Hosting.HostingEnvironment;
 using DataBooster.PSWebApi;
 
@@ -89,7 +90,7 @@ namespace PSWebApi.OwinSample
 					long preflightMaxAge = 0L;
 
 					if (!string.IsNullOrEmpty(strPreflightMaxAge))
-						long.TryParse(strPreflightMaxAge, out preflightMaxAge);
+						long.TryParse(strPreflightMaxAge, NumberStyles.Any, NumberFormatInfo.CurrentInfo, out preflightMaxAge);
 
 					_preflightMaxAge = preflightMaxAge;
 				}
@@ -101,5 +102,60 @@ namespace PSWebApi.OwinSample
 				_preflightMaxAge = value;
 			}
 		}
+
+		#region Invoking Command Line
+
+		private const string _cmdForceArgumentQuoteSettingKey = "CmdForceArgumentQuote";
+		private const string _cmdTimeoutSecondsSettingKey = "CmdTimeoutSeconds";
+
+		private static bool? _cmdForceArgumentQuote = null;
+		public static bool CmdForceArgumentQuote
+		{
+			get
+			{
+				if (_cmdForceArgumentQuote == null)
+				{
+					string strCmdForceArgumentQuote = ConfigurationManager.AppSettings[_cmdForceArgumentQuoteSettingKey];
+					bool cmdForceArgumentQuote = false;
+
+					if (!string.IsNullOrEmpty(strCmdForceArgumentQuote))
+						bool.TryParse(strCmdForceArgumentQuote, out cmdForceArgumentQuote);
+
+					_cmdForceArgumentQuote = cmdForceArgumentQuote;
+				}
+
+				return _cmdForceArgumentQuote.Value;
+			}
+			set
+			{
+				_cmdForceArgumentQuote = value;
+			}
+		}
+
+		private static int? _cmdTimeoutSeconds = null;
+		public static int CmdTimeoutSeconds
+		{
+			get
+			{
+				if (_cmdTimeoutSeconds == null)
+				{
+					string strCmdTimeoutSeconds = ConfigurationManager.AppSettings[_cmdTimeoutSecondsSettingKey];
+					int cmdTimeoutSeconds = 3600;
+
+					if (!string.IsNullOrEmpty(strCmdTimeoutSeconds))
+						int.TryParse(strCmdTimeoutSeconds, NumberStyles.Any, NumberFormatInfo.CurrentInfo, out cmdTimeoutSeconds);
+
+					_cmdTimeoutSeconds = cmdTimeoutSeconds;
+				}
+
+				return _cmdTimeoutSeconds.Value;
+			}
+			set
+			{
+				_cmdTimeoutSeconds = value;
+			}
+		}
+
+		#endregion
 	}
 }

@@ -24,14 +24,21 @@ namespace PSWebApi.OwinSample
 				name: "PSWebApi",
 				routeTemplate: "ps/{*script}",
 				defaults: new { controller = "PSWebApi", action = "InvokePS" },
-				constraints: new { script = @".+\.ps1" }
+				constraints: new { script = @".+\.ps1$" }
 			);
 
 			config.Routes.MapHttpRoute(
 				name: "PSWebApi-Ext",
 				routeTemplate: "ps.{ext}/{*script}",
 				defaults: new { controller = "PSWebApi", action = "InvokePS" },
-				constraints: new { script = @".+\.ps1", ext = psMediaTypeFormatter.Configuration.UriPathExtConstraint() }
+				constraints: new { script = @".+\.ps1$", ext = psMediaTypeFormatter.Configuration.UriPathExtConstraint() }
+			);
+
+			config.Routes.MapHttpRoute(
+				name: "CmdWebApi",
+				routeTemplate: "cmd/{*script}",
+				defaults: new { controller = "PSWebApi", action = "InvokeCMD", ext = "string" },
+				constraints: new { script = @".+\.(bat|exe)$" }
 			);
 
 			config.Routes.MapHttpRoute(

@@ -58,12 +58,14 @@ namespace DataBooster.PSWebApi
 					ps.AddCommand(converter.ConversionCmdlet, true).Commands.AddParameters(converter.CmdletParameters);
 
 				string stringResult = GetPsResult(ps.Invoke(), encoding);
+				HttpStatusCode httpStatusCode = ps.HadErrors ? HttpStatusCode.InternalServerError :
+					(string.IsNullOrEmpty(stringResult) ? HttpStatusCode.NoContent : HttpStatusCode.OK);
+
 				StringContent responseContent = new StringContent(stringResult, encoding, contentNegotiator.NegotiatedMediaType.MediaType);
 
 				responseContent.Headers.SetContentHeader(ps.Streams);
 
-				return new HttpResponseMessage(ps.HadErrors ? HttpStatusCode.InternalServerError :
-					(string.IsNullOrEmpty(stringResult) ? HttpStatusCode.NoContent : HttpStatusCode.OK)) { Content = responseContent };
+				return new HttpResponseMessage(httpStatusCode) { Content = responseContent };
 			}
 		}
 

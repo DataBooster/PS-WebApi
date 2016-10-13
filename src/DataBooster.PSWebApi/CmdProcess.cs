@@ -12,7 +12,7 @@ using System.Text.RegularExpressions;
 
 namespace DataBooster.PSWebApi
 {
-	public class ConsoleProcess : IDisposable
+	public class CmdProcess : IDisposable
 	{
 		private static readonly Regex _rgxNoneedQuotes = new Regex(@"^((\\\S|\\$|[^""\s\\])|(""(\\.|""""|[^""\\])*""))+$");
 		private static readonly Regex _rgxEscapeBackslash = new Regex(@"(\\+)(?=""|$)");
@@ -27,7 +27,7 @@ namespace DataBooster.PSWebApi
 		private readonly Process _process;
 		private bool _started, _disposed;
 
-		public ConsoleProcess(string filePath, string arguments = null)
+		public CmdProcess(string filePath, string arguments = null)
 		{
 			if (filePath != null)
 				filePath = filePath.Trim();
@@ -44,7 +44,7 @@ namespace DataBooster.PSWebApi
 			_started = _disposed = false;
 		}
 
-		public ConsoleProcess(string filePath, IEnumerable<string> args, bool forceArgumentQuote = false)
+		public CmdProcess(string filePath, IEnumerable<string> args, bool forceArgumentQuote = false)
 			: this(filePath, JoinArguments(args, forceArgumentQuote))
 		{
 		}
