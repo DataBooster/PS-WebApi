@@ -4,18 +4,14 @@
 using System;
 using System.IO;
 using System.Text;
-using System.Linq;
 using System.Threading;
 using System.Diagnostics;
 using System.Collections.Generic;
-using System.Text.RegularExpressions;
 
 namespace DataBooster.PSWebApi
 {
 	public class CmdProcess : IDisposable
 	{
-		private static readonly Regex _rgxNoneedQuotes = new Regex(@"^((\\\S|\\$|[^""\s\\])|(""(\\.|""""|[^""\\])*""))+$");
-		private static readonly Regex _rgxEscapeBackslash = new Regex(@"(\\+)(?=""|$)");
 		private readonly ProcessStartInfo _processStartInfo;
 
 		public Encoding OutputEncoding
@@ -45,8 +41,12 @@ namespace DataBooster.PSWebApi
 		}
 
 		public CmdProcess(string filePath, IEnumerable<string> args, bool forceArgumentQuote = false)
-			: this(filePath, JoinArguments(args, forceArgumentQuote))
+			: this(filePath)
 		{
+			CmdArgumentsBuilder argsBuilder = new CmdArgumentsBuilder();
+
+			argsBuilder.Add(args);
+			_processStartInfo.Arguments = argsBuilder.ToString(forceArgumentQuote);
 		}
 
 		public int Execute(int timeoutSeconds = Timeout.Infinite)
@@ -70,27 +70,6 @@ namespace DataBooster.PSWebApi
 		public string ReadStandardError()
 		{
 			return _process.StandardError.ReadToEnd();
-		}
-
-		private static string JoinArguments(IEnumerable<string> args, bool forceQuote = false)
-		{
-			if (args == null)
-				return null;
-
-			return string.Join(" ", args.Select(a => EscapeArgument(a, forceQuote)));
-		}
-
-		private static string EscapeArgument(string arg, bool forceQuote = false)
-		{
-			if (string.IsNullOrWhiteSpace(arg))
-				return "\"" + (arg ?? string.Empty) + "\"";
-
-			if (forceQuote == false && _rgxNoneedQuotes.IsMatch(arg))
-				return arg;
-
-			string escArg = _rgxEscapeBackslash.Replace(arg, m => m.Groups[1].Value + m.Groups[1].Value);
-
-			return "\"" + escArg.Replace("\"", "\\\"") + "\"";
 		}
 
 		#region IDisposable Members

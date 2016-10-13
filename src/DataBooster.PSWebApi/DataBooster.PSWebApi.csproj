@@ -66,6 +66,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="CmdArgumentsBuilder.cs" />
     <Compile Include="CmdProcess.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="PSConfiguration.cs" />

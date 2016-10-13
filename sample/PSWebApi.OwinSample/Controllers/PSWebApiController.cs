@@ -20,9 +20,9 @@ namespace PSWebApi.OwinSample.Controllers
 		[AcceptVerbs("GET", "POST", "PUT", "DELETE")]
 		public HttpResponseMessage InvokeCMD(string script, JToken argumentsFromBody)
 		{
-			IEnumerable<string> allArguments = this.Request.GatherCmdArguments(argumentsFromBody);
+			string allArguments = this.Request.BuildCmdArguments(argumentsFromBody, ConfigHelper.CmdForceArgumentQuote);
 
-			return this.InvokeCmd(script.LocalFullPath(), allArguments, ConfigHelper.CmdForceArgumentQuote, ConfigHelper.CmdTimeoutSeconds);
+			return this.InvokeCmd(script.LocalFullPath(), allArguments, ConfigHelper.CmdTimeoutSeconds);
 		}
 	}
 }
