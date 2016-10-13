@@ -44,9 +44,7 @@ namespace DataBooster.PSWebApi
 			: this(filePath)
 		{
 			CmdArgumentsBuilder argsBuilder = new CmdArgumentsBuilder();
-
-			argsBuilder.Add(args);
-			_processStartInfo.Arguments = argsBuilder.ToString(forceArgumentQuote);
+			_processStartInfo.Arguments = argsBuilder.Add(args).ToString(forceArgumentQuote);
 		}
 
 		public int Execute(int timeoutSeconds = Timeout.Infinite)

@@ -13,8 +13,6 @@ namespace DataBooster.PSWebApi
 {
 	public static partial class PSControllerExtensions
 	{
-		#region Command Line
-
 		public static string BuildCmdArguments(this HttpRequestMessage request, IEnumerable<string> argsFromBody, bool forceArgumentQuote = false)
 		{
 			CmdArgumentsBuilder argsBuilder = new CmdArgumentsBuilder();
@@ -58,7 +56,5 @@ namespace DataBooster.PSWebApi
 				return new HttpResponseMessage(httpStatusCode) { Content = responseContent };
 			}
 		}
-
-		#endregion
 	}
 }

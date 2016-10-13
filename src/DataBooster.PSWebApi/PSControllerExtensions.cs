@@ -30,8 +30,6 @@ namespace DataBooster.PSWebApi
 			_escapedNewLine = Uri.EscapeDataString(Environment.NewLine).ToLower();
 		}
 
-		#region PowerShell
-
 		public static IEnumerable<KeyValuePair<string, object>> GatherInputParameters(this HttpRequestMessage request, IDictionary<string, object> parametersFromBody)
 		{
 			var queryStrings = request.GetQueryNameValuePairs().Select(entry => new KeyValuePair<string, object>(entry.Key, entry.Value));
@@ -200,7 +198,5 @@ namespace DataBooster.PSWebApi
 
 			return actionContext.ControllerContext.RouteData.Values[urlPlaceholderName];
 		}
-
-		#endregion
 	}
 }
