@@ -39,12 +39,12 @@ namespace DataBooster.PSWebApi
 			using (CmdProcess cmd = new CmdProcess(scriptPath, arguments))
 			{
 				int exitCode = cmd.Execute(timeoutSeconds);
-				string responseString = cmd.ReadStandardError();
+				string responseString = cmd.GetStandardError();
 				HttpStatusCode httpStatusCode;
 
 				if (exitCode == 0 && string.IsNullOrEmpty(responseString))
 				{
-					responseString = cmd.ReadStandardOutput();
+					responseString = cmd.GetStandardOutput();
 					httpStatusCode = string.IsNullOrEmpty(responseString) ? HttpStatusCode.NoContent : HttpStatusCode.OK;
 				}
 				else

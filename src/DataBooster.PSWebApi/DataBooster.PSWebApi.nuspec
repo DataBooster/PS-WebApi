@@ -1,6 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
-	<metadata minClientVersion="2.6">
+	<metadata>
 		<id>DataBooster.PSWebApi</id>
 		<version>$version$</version>
 		<title>$title$</title>
@@ -12,6 +12,6 @@
 		<description>$description$</description>
 		<releaseNotes>https://github.com/DataBooster/PS-WebApi/releases</releaseNotes>
 		<copyright>Copyright 2016 Abel Cheng</copyright>
-		<tags>PowerShell ASP.NET Web API JSON XML CSV Text Html REST APIs command line CMD Batch bat exe ps1</tags>
+		<tags>PowerShell ASP.NET Web API JSON XML CSV Text Html REST APIs CommandLine CMD Batch bat exe ps1</tags>
 	</metadata>
 </package>

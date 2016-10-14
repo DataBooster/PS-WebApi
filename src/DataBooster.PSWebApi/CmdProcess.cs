@@ -20,6 +20,7 @@ namespace DataBooster.PSWebApi
 			set { _processStartInfo.StandardErrorEncoding = _processStartInfo.StandardOutputEncoding = value; }
 		}
 
+		private readonly StringBuilder _sbStandardOutput, _sbStandardError;
 		private readonly Process _process;
 		private bool _started, _disposed;
 
@@ -36,8 +37,22 @@ namespace DataBooster.PSWebApi
 			if (!string.IsNullOrWhiteSpace(arguments))
 				_processStartInfo.Arguments = arguments;
 
+			_sbStandardOutput = new StringBuilder();
+			_sbStandardError = new StringBuilder();
+
 			_process = new Process() { StartInfo = _processStartInfo };
 			_started = _disposed = false;
+
+			_process.OutputDataReceived += (sender, e) =>
+				{
+					if (e.Data != null)
+						_sbStandardOutput.Append(e.Data);
+				};
+			_process.ErrorDataReceived += (sender, e) =>
+				{
+					if (e.Data != null)
+						_sbStandardError.Append(e.Data);
+				};
 		}
 
 		public CmdProcess(string filePath, IEnumerable<string> args, bool forceArgumentQuote = false)
@@ -52,6 +67,8 @@ namespace DataBooster.PSWebApi
 			if (!_started)
 			{
 				_process.Start();
+				_process.BeginOutputReadLine();
+				_process.BeginErrorReadLine();
 				_started = true;
 			}
 
@@ -60,14 +77,14 @@ namespace DataBooster.PSWebApi
 			return _process.HasExited ? _process.ExitCode : int.MinValue;
 		}
 
-		public string ReadStandardOutput()
+		public string GetStandardOutput()
 		{
-			return _process.StandardOutput.ReadToEnd();
+			return _sbStandardOutput.ToString();
 		}
 
-		public string ReadStandardError()
+		public string GetStandardError()
 		{
-			return _process.StandardError.ReadToEnd();
+			return _sbStandardError.ToString();
 		}
 
 		#region IDisposable Members
