@@ -49,7 +49,6 @@ namespace PSWebApi.OwinSample
 #if DEBUG
 			config.IncludeErrorDetailPolicy = IncludeErrorDetailPolicy.Always;
 #endif
-
 			app.UseWebApi(config);
 		}
 

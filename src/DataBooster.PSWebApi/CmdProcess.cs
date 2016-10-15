@@ -19,10 +19,12 @@ namespace DataBooster.PSWebApi
 			get { return _processStartInfo.StandardOutputEncoding; }
 			set { _processStartInfo.StandardErrorEncoding = _processStartInfo.StandardOutputEncoding = value; }
 		}
-
-		private readonly StringBuilder _sbStandardOutput, _sbStandardError;
 		private readonly Process _process;
 		private bool _started, _disposed;
+
+		private readonly StringBuilder _sbStandardOutput, _sbStandardError;
+		private readonly ManualResetEventSlim _waitStandardOutput, _waitStandardError;
+		private readonly WaitHandle[] _waitRedirectionHandles;
 
 		public CmdProcess(string filePath, string arguments = null)
 		{
@@ -39,19 +41,26 @@ namespace DataBooster.PSWebApi
 
 			_sbStandardOutput = new StringBuilder();
 			_sbStandardError = new StringBuilder();
+			_waitStandardOutput = new ManualResetEventSlim(false);
+			_waitStandardError = new ManualResetEventSlim(false);
+			_waitRedirectionHandles = new WaitHandle[] { _waitStandardOutput.WaitHandle, _waitStandardError.WaitHandle };
 
 			_process = new Process() { StartInfo = _processStartInfo };
 			_started = _disposed = false;
 
 			_process.OutputDataReceived += (sender, e) =>
 				{
-					if (e.Data != null)
-						_sbStandardOutput.Append(e.Data);
+					if (e.Data == null)
+						_waitStandardOutput.Set();
+					else
+						_sbStandardOutput.AppendLine(e.Data);
 				};
 			_process.ErrorDataReceived += (sender, e) =>
 				{
-					if (e.Data != null)
-						_sbStandardError.Append(e.Data);
+					if (e.Data == null)
+						_waitStandardError.Set();
+					else
+						_sbStandardError.AppendLine(e.Data);
 				};
 		}
 
@@ -62,6 +71,11 @@ namespace DataBooster.PSWebApi
 			_processStartInfo.Arguments = argsBuilder.Add(args).ToString(forceArgumentQuote);
 		}
 
+		/// <summary>
+		/// Starts the associated process and makes the current thread wait until the associated process terminates or times out.
+		/// </summary>
+		/// <param name="timeoutSeconds">The amount of time, in seconds, to wait for the associated process to exit. The default is Timeout.Infinite(-1).</param>
+		/// <returns>The exit code that the associated process specified when it terminated. If the process cannot be completed within the timeoutSeconds, a TimeoutException is thrown.</returns>
 		public int Execute(int timeoutSeconds = Timeout.Infinite)
 		{
 			if (!_started)
@@ -72,9 +86,15 @@ namespace DataBooster.PSWebApi
 				_started = true;
 			}
 
-			_process.WaitForExit(timeoutSeconds * 1000);
+			int millisecondsTimeout = (timeoutSeconds == Timeout.Infinite) ? Timeout.Infinite : timeoutSeconds * 1000;
 
-			return _process.HasExited ? _process.ExitCode : int.MinValue;
+			_process.WaitForExit(millisecondsTimeout);
+			WaitHandle.WaitAll(_waitRedirectionHandles, millisecondsTimeout);
+
+			if (_process.HasExited)
+				return _process.ExitCode;
+			else
+				throw new TimeoutException(string.Format("\"{0}\" timed out in {1} seconds.", Path.GetFileName(_processStartInfo.FileName), timeoutSeconds));
 		}
 
 		public string GetStandardOutput()
@@ -104,6 +124,9 @@ namespace DataBooster.PSWebApi
 						_process.Kill();
 
 					_process.Dispose();
+
+					_waitStandardOutput.Dispose();
+					_waitStandardError.Dispose();
 				}
 
 				_disposed = true;
