@@ -38,16 +38,21 @@ namespace DataBooster.PSWebApi
 
 		public CmdArgumentsBuilder Add<T>(IEnumerable<KeyValuePair<string, T>> parameters)
 		{
+			string key;
+
 			if (parameters == null)
 				return this;
 
 			foreach (var kvp in parameters)
 			{
-				if (!string.IsNullOrWhiteSpace(kvp.Key))
-					_arguments.Add(kvp.Key);
+				key = (kvp.Key == null) ? string.Empty : kvp.Key.Trim();
+
+				if (key.Length > 0)
+					_arguments.Add(key);
 
 				_arguments.Add(kvp.Value.ToString());
 			}
+
 			return this;
 		}
 

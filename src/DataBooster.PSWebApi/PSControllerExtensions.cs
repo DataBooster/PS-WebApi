@@ -155,18 +155,20 @@ namespace DataBooster.PSWebApi
 
 		private static void AddParameters(this PSCommand psCommand, IEnumerable<KeyValuePair<string, object>> parameters)
 		{
+			string key;
+
 			if (parameters == null)
 				return;
 
 			foreach (var kvp in parameters)
 			{
-				if (string.IsNullOrWhiteSpace(kvp.Key))
-				{
+				key = (kvp.Key == null) ? string.Empty : kvp.Key.Trim();
+
+				if (key.Length > 0)
+					psCommand.AddParameter(key, kvp.Value);
+				else
 					if (kvp.Value != null)
 						psCommand.AddArgument(kvp.Value);
-				}
-				else
-					psCommand.AddParameter(kvp.Key, kvp.Value);
 			}
 		}
 
