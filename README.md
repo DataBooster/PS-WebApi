@@ -105,13 +105,57 @@ Accept: application/xhtml
 
     Since neither Batch-Program nor Console-Application would return an object, the response content-type is always text/plain.
 
-    The response body presents the text in the standard output (stdout) stream if the program runs successfully with a ***0*** *ExitCode* and the standard error (stderr) stream is **empty**; Otherwise, the response body presents the text in stderr or exception messages with a HTTP 500 Internal Error header.
+    The response body presents the text in the standard output (stdout) stream if the program runs successfully with a ***0*** *ExitCode* and the standard error (stderr) stream is **empty**; Otherwise, the response body presents the text in stderr or exception messages with a *HTTP 500 Internal Error* header.
 
 #### Parameters and Arguments
-Parameters and arguments can be carried through either request message body or URI query-string, or both.  
+Parameters and arguments can be carried through either URI query-string or message body, or both.  
 JSON is the only one recognizable media-type in the request body, please always include the "**Content-Type: application/json**" or "Content-Type: text/json" in your request header if the request contains a body.  
-If both request body and query-string are supplied, the body parts (parameters and arguments) will be taken into the command line first, then append the query-string parts (parameters and arguments).
+If both request body and query-string are supplied, the query-string parts (parameters and arguments) will be taken into the command line first, then append the body parts (parameters and arguments).
 
 ##### PowerShell
+1. From URI query-string
+
+    All the name/value pairs in query-string are passed to PowerShell. Empty name and duplicate names are acceptable in query-string. For the following Uri example:
+
+    ```
+test-args.ps1?np1=0.618&np1=2.71828&=arg1...&=arg2...
+    ```
+    **==>**
+    ```
+test-args.ps1 `
+-np1 "0.618" `
+-np1 "2.71828" `
+"arg1..." `
+"arg2..."
+    ```
+    *Get through Uri query-string, all the values are always string type.*
+
+2. From Body  
+For the moment, PowerShell parameters/arguments can only accept a JSON object *(which can be deserialized into a Dictionary<string,object>)* from the request body. Any invalid JSON will be ignored without warning.
+    - To add an argument (unnamed-parameter), please use an empty string or any-length white-space string as the key-name of a key/value pair.  
+To have multiple arguments, please use different number of white-space as the key-name of key/value pairs.
+    - To add multiple named-parameters with the same parameter name, please add different number of white-space before or after the actual parameter name as the key-name of key/value pairs, since a dictionary object cannot carry duplicate keys. When the server side receives the dictionary object, it will **trim** all leading and trailing white-space from the key-name before it pass to PowerShell. But the value parts will always remain as it is (**no trim**).
+
+    For the following JSON example:
+    ``` JSON
+{
+    "named_param1": 3.14,
+    "": "This is an argument (unnamed-parameter)",
+    "np2": "Value 1 of 3",
+    "np2 ": "Value 2 of 3",
+    " np2 ": "Value 3 of 3",
+    " ": " This is another argument "
+}
+    ```
+    **==>**
+    ```
+test-args.ps1 `
+-named_param1 3.14 `
+"This is an argument (unnamed-parameter)" `
+-np2 "Value 1 of 3" `
+-np2 "Value 2 of 3" `
+-np2 "Value 3 of 3" `
+" This is another argument "
+    ```
 
 ##### Batch/Executable
