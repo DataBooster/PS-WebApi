@@ -16,19 +16,19 @@ namespace DataBooster.PSWebApi
 		public static string BuildCmdArguments(this HttpRequestMessage request, IEnumerable<string> argsFromBody, bool forceArgumentQuote = false)
 		{
 			CmdArgumentsBuilder argsBuilder = new CmdArgumentsBuilder();
-			return argsBuilder.Add(argsFromBody).AddFromQueryString(request).ToString(forceArgumentQuote);
+			return argsBuilder.AddFromQueryString(request).Add(argsFromBody).ToString(forceArgumentQuote);
 		}
 
 		public static string BuildCmdArguments(this HttpRequestMessage request, IEnumerable<KeyValuePair<string, object>> argsFromBody, bool forceArgumentQuote = false)
 		{
 			CmdArgumentsBuilder argsBuilder = new CmdArgumentsBuilder();
-			return argsBuilder.Add(argsFromBody).AddFromQueryString(request).ToString(forceArgumentQuote);
+			return argsBuilder.AddFromQueryString(request).Add(argsFromBody).ToString(forceArgumentQuote);
 		}
 
 		public static string BuildCmdArguments(this HttpRequestMessage request, JToken argsFromBody, bool forceArgumentQuote = false)
 		{
 			CmdArgumentsBuilder argsBuilder = new CmdArgumentsBuilder();
-			return argsBuilder.Add(argsFromBody).AddFromQueryString(request).ToString(forceArgumentQuote);
+			return argsBuilder.AddFromQueryString(request).Add(argsFromBody).ToString(forceArgumentQuote);
 		}
 
 		public static HttpResponseMessage InvokeCmd(this ApiController apiController, string scriptPath, string arguments, int timeoutSeconds = Timeout.Infinite)

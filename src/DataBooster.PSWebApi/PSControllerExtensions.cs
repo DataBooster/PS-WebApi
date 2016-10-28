@@ -34,7 +34,7 @@ namespace DataBooster.PSWebApi
 		{
 			var queryStrings = request.GetQueryNameValuePairs().Select(entry => new KeyValuePair<string, object>(entry.Key, entry.Value));
 
-			return (parametersFromBody == null) ? queryStrings : parametersFromBody.Concat(queryStrings);
+			return (parametersFromBody == null) ? queryStrings : queryStrings.Concat(parametersFromBody);
 		}
 
 		public static HttpResponseMessage InvokePowerShell(this ApiController apiController, string scriptPath, IEnumerable<KeyValuePair<string, object>> parameters)
