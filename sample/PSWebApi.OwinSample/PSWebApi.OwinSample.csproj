@@ -40,8 +40,8 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="DataBooster.PSWebApi, Version=1.0.9.0, Culture=neutral, PublicKeyToken=ee1eb06d9feeb8dc, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\DataBooster.PSWebApi.1.0.9-alpha\lib\net45\DataBooster.PSWebApi.dll</HintPath>
+    <Reference Include="DataBooster.PSWebApi, Version=1.0.10.0, Culture=neutral, PublicKeyToken=ee1eb06d9feeb8dc, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\DataBooster.PSWebApi.1.0.10-alpha\lib\net45\DataBooster.PSWebApi.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="Microsoft.CSharp" />

@@ -50,7 +50,8 @@ namespace DataBooster.PSWebApi
 				if (key.Length > 0)
 					_arguments.Add(key);
 
-				_arguments.Add(kvp.Value.ToString());
+				if (!IsNull(kvp.Value))
+					_arguments.Add(kvp.Value.ToString());
 			}
 
 			return this;
@@ -83,6 +84,17 @@ namespace DataBooster.PSWebApi
 			}
 
 			return this;
+		}
+
+		private bool IsNull<T>(T value)
+		{
+			if (value == null)
+				return true;
+			else
+			{
+				JToken jValue = value as JToken;
+				return (jValue != null && jValue.Type == JTokenType.Null);
+			}
 		}
 
 		public CmdArgumentsBuilder AddFromQueryString(HttpRequestMessage httpRequestMessage)
