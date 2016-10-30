@@ -115,7 +115,7 @@ If both request body and query-string are supplied, the query-string parts (para
 ##### PowerShell
 1. From URI query-string
 
-    All the name/value pairs in query-string are passed to PowerShell. Empty name and duplicate names are acceptable in query-string. For the following Uri example:
+    All the name/value pairs in query-string are passed to PowerShell. Empty name and duplicate names are acceptable in query-string. Empty-named parameters will be converted to arguments. For the following Uri example:
 
     ```
 test-args.ps1?np1=0.618&np1=2.71828&=arg1...&=arg2...
@@ -135,6 +135,7 @@ For the moment, PowerShell parameters/arguments can only accept a JSON object *(
     - To add an argument (unnamed-parameter), please use an empty string or any-length white-space string as the key-name of a key/value pair.  
 To have multiple arguments, please use different number of white-space as the key-name of key/value pairs.
     - To add multiple named-parameters with the same parameter name, please add different number of white-space before or after the actual parameter name as the key-name of key/value pairs, since a dictionary object cannot carry duplicate keys. When the server side receives the dictionary object, it will **trim** all leading and trailing white-space from the key-name before it pass to PowerShell. But the value parts will always remain as it is (**no trim**).
+    - If a value is null and its key is null, empty or white-space; that key/value pair will be discarded together.
 
     For the following JSON example:
     ``` JSON
@@ -159,3 +160,68 @@ test-args.ps1 `
     ```
 
 ##### Batch/Executable
+Essentially, there is no concept of named-parameter in batch/executable world. Command line can only supply string-typed arguments. There are some different treatments on arguments from PowerShell.
+
+1. From URI query-string  
+Each name/value pair will be split into two arguments. For examples:
+    - `test-args.bat?/n1=value1`  is equivalent to `test-args.bat?=/n1&=value1`  
+(*both result to the same command line:* `test-args.bat /n1 value1`)
+    - `test-args.bat?-n2=value2`  is equivalent to `test-args.bat?=-n2&=value2`  
+(*both result to the same command line:* `test-args.bat -n2 value2`)
+
+2. From Body  
+Three kinds of JSON data can be accepted as command line arguments. Each request can use one of a kind in the message body:
+    - JSON Object *(`Dictionary<string,object>`)*  
+Similar to URI query-string, JSON Object is an unordered set of name/value pairs. Each name/value pair basically will be split into two arguments. All leading and trailing white-space will be trimmed from the name. If the name becomes empty, it won’t be added into the command line as an argument. But the value part won't be trimmed. Any type other than string will be converted into a string by **ToString()** method *(null value will become an empty string "")*. A null value will be discarded only when its name is null, empty or white-space.  
+For Example,
+    ``` JSON
+{
+    "/n1": 3.14,
+    "-n2": "Value 1 of 2",
+    "-n2 ": "Value2of2",
+    " ": null,
+    "": " This is the last argument "
+}
+    ```
+    **==>**
+    ```
+test-args.bat /n1 3.14 -n2 "Value 1 of 3" -n2 Value2of3 " This is the last argument "
+    ```
+
+    - JSON Array  
+Using a JSON Array is most straightforward way, each item in the array will be passed to command line as arguments (no trim); null value will become an empty string "" (enclosed by double quotes).
+
+    For example,
+    ``` JSON
+[
+    "/n1",
+    3.14,
+    "-n2",
+    "Value 1 of 3",
+    "-n2",
+    "Value2of3",
+    " This is the last argument "
+]
+    ```
+    ==>
+    ```
+test-args.bat /n1 3.14 -n2 "Value 1 of 3" -n2 Value2of3 " This is the last argument "
+    ```
+
+    - Single JSON Value  
+When there is only one item (single value) in the array, the single JSON value can be put in the body directly, rather than wrapped in an array *(surrounded by square brackets)*.
+
+    For example,
+    ``` JSON
+"single value argument"
+    ```
+    *is equivalent to*
+    ``` JSON
+[
+    "single value argument"
+]
+    ```
+    both ==>
+    ```
+test-args.bat "single value argument"
+    ```
