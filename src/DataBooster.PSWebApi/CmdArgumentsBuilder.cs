@@ -50,8 +50,8 @@ namespace DataBooster.PSWebApi
 				if (key.Length > 0)
 					_arguments.Add(key);
 
-				if (!IsNull(kvp.Value))
-					_arguments.Add(kvp.Value.ToString());
+				if (key.Length > 0 || !IsNullValue(kvp.Value))
+					_arguments.Add((kvp.Value == null) ? string.Empty : kvp.Value.ToString());
 			}
 
 			return this;
@@ -86,7 +86,7 @@ namespace DataBooster.PSWebApi
 			return this;
 		}
 
-		private bool IsNull<T>(T value)
+		protected virtual bool IsNullValue<T>(T value)
 		{
 			if (value == null)
 				return true;
