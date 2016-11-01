@@ -172,7 +172,7 @@ Each name/value pair will be split into two arguments. For examples:
 2. From Body  
 Three kinds of JSON data can be accepted as command line arguments. Each request can use one of a kind in the message body:
     - JSON Object *(`Dictionary<string,object>`)*  
-Similar to URI query-string, JSON Object is an unordered set of name/value pairs. Each name/value pair basically will be split into two arguments. All leading and trailing white-space will be trimmed from the name. If the name becomes empty, it won’t be added into the command line as an argument. But the value part won't be trimmed. Any type other than string will be converted into a string by **ToString()** method *(null value will become an empty string "")*. A null value will be discarded only when its name is null, empty or white-space.  
+Similar to URI query-string, JSON Object is an unordered set of name/value pairs. Each name/value pair basically will be split into two arguments. All leading and trailing white-space will be trimmed from the name. If the name becomes empty, it won't be added into the command line as an argument. But the value part won't be trimmed. Any type other than string will be converted into a string by **ToString()** method *(null value will become an empty string "")*. A null value will be discarded only when its name is null, empty or white-space.  
 For Example,
     ``` JSON
 {
@@ -225,3 +225,61 @@ When there is only one item (single value) in the array, the single JSON value c
     ```
 test-args.bat "single value argument"
     ```
+
+- ***Escaping***  
+Due to the particularity of Windows command line argument parsing, PSWebApi uses the following rules by default to determine whether or not a string value must be surrounded by extra double quotation marks:
+    - A string will remain unchanged if the command-line parser (CMD.EXE) can interpret it as a single argument;  
+For examples,  
+    `3.14`  
+    `A_string_without_white_space`  
+    `"A string already surrounded by double quotation marks"`  
+    `/name_without_white_space:"value with spaces"`  
+    - Otherwise, if a string would be interpreted as multiple broken arguments or a string contains any unclosed double-quotation mark *(non-literal)*, then the original string will be surrounded by an extra pair of double-quotation marks at the outermost layer, and all the originally nested quotes will be escaped using the `\"` as **literal** double-quotation marks.  
+For examples,  
+`She's 5'5" tall.`  
+will be encoded/escaped as  
+`"She's 5'5\" tall."`
+
+    A test batch [test-args.bat](https://github.com/DataBooster/PS-WebApi/tree/master/sample/PSWebApi.OwinSample/scripts-root/bat-scripts) *(shipped with the sample project [PSWebApi.OwinSample](https://github.com/DataBooster/PS-WebApi/releases))* can be used to give it a try.
+
+## Conventions
+#### HTTP status of PowerShell response
+- If any errors or exceptions occur, whether **Terminating Error** or **Non-Terminating Error** *(such as: write-error)*; A HTTP status 500 *(InternalServerError)* will be sent to the client.
+- If the request script has been successfully processed, but the returned result-object is null or empty; A HTTP status 204 *(NoContent)* will be sent to the client.
+- If the request script has been successfully processed and there is something in the returned result-object; A HTTP status 200 *(**OK**)* will be sent to the client.
+
+#### HTTP status of Batch/Executable response
+- If any exceptions occur or the standard error *(**stderr**)* stream contains any message; A HTTP status 500 *(InternalServerError)* will be sent to the client.
+- If the request has been successfully processed and the **stderr** is empty, but the standard output (**stdout**) stream is empty; A HTTP status 204 *(NoContent)* will be sent to the client.
+- If the request has been successfully processed and the **stderr** is empty, but the **stdout** stream has some content; A HTTP status 200 *(**OK**)* will be sent to the client.
+
+## NuGet
+#### Server library package
+- [PowerShell-WebApi](https://www.nuget.org/packages/DataBooster.PSWebApi)
+
+#### Client  
+Most of [DbWebApi Client Packages](https://github.com/DataBooster/DbWebApi#clients-1) can be reused in PSWebApi client.  
+For example, a .Net Client:
+``` CSharp
+using DataBooster.DbWebApi.Client;
+```
+``` CSharp
+DbWebApiClient client = new DbWebApiClient("http://localhost:1608/ps.json/");
+//  client.HttpMethod = HttpMethod.Get;    // Default is POST
+
+// Synchronous call. If need asynchronous call, please use ExecAsJsonAsync(..) instead.
+JObject data = client.ExecAsJson("ps-scripts/test-args.ps1",
+    new {
+        inDate = new DateTime(2015, 3, 16)
+        //, ... other input parameters, if any.
+    });
+```
+In the same way,  
+`ExecAsXml(...)` or *`ExecAsXmlAsync(...)`* can be used for XML response;  
+`ExecAsString(...)` or *`ExecAsStringAsync(...)`* can be used for any other kinds of plain text response;  
+`ExecAsStream(...)` or *`ExecAsStreamAsync(...)`* can be used for saving the response body as a file.
+
+
+***
+
+Welcome all feedback through the [Issues](https://github.com/DataBooster/PS-WebApi/issues) or [Discussions](https://pswebapi.codeplex.com/discussions).
