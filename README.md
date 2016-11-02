@@ -23,11 +23,11 @@ Similar to the sister repository [DbWebApi](https://github.com/DataBooster/DbWeb
 
 **Batch**:
 - `http://`localhost:1608/**cmd**/*bat-scripts/test-args.bat?a1=1&=arg...*  
-*(captures the StdOut and returns the content as plain text)*
+*(captures the StdOut and returns it as plain text)*
 
 **Executable**:
 - `http://`localhost:1608/**cmd**/*exe-programs/test-args.exe?a1=1&=arg...*  
-*(captures the StdOut and returns the content as plain text)*
+*(captures the StdOut and returns it as plain text)*
 
 Often times, in some intranet applications, some functional requirements can be quickly implemented by succinct PowerShell scripts or command line scripts. However, for some integratability reason, this practice was out of sight from most existing projects.
 
@@ -250,8 +250,9 @@ will be encoded/escaped as
 
 #### HTTP status of Batch/Executable response
 - If any exceptions occur or the standard error *(**stderr**)* stream contains any message; A HTTP status 500 *(InternalServerError)* will be sent to the client.
-- If the request has been successfully processed and the **stderr** is empty, but the standard output (**stdout**) stream is empty; A HTTP status 204 *(NoContent)* will be sent to the client.
-- If the request has been successfully processed and the **stderr** is empty, but the **stdout** stream has some content; A HTTP status 200 *(**OK**)* will be sent to the client.
+- If the request process has exited successfully *(by an ExitCode value of 0)* and the **stderr** is empty, but the standard output (**stdout**) stream is empty; A HTTP status 204 *(NoContent)* will be sent to the client.
+- If the request process has exited successfully *(by an ExitCode value of 0)* and the **stderr** is empty, but the **stdout** stream has some content; A HTTP status 200 *(**OK**)* will be sent to the client.
+- A custom field "Exit-Code" is added into the response header to carry the exit code value of the associated process.
 
 ## NuGet
 #### Server library package
@@ -276,8 +277,8 @@ JObject data = client.ExecAsJson("ps-scripts/test-args.ps1",
 ```
 In the same way,  
 `ExecAsXml(...)` or *`ExecAsXmlAsync(...)`* can be used for XML response;  
-`ExecAsString(...)` or *`ExecAsStringAsync(...)`* can be used for any other kinds of plain text response;  
-`ExecAsStream(...)` or *`ExecAsStreamAsync(...)`* can be used for saving the response body as a file.
+`ExecAsString(...)` or *`ExecAsStringAsync(...)`* can be used for any kind of plain text response;  
+`ExecAsStream(...)` or *`ExecAsStreamAsync(...)`* can be used for saving response body as a file.
 
 
 ***
