@@ -5,12 +5,12 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("PowerShell-WebApi")]
-[assembly: AssemblyDescription("Let PowerShell Script serve as WebApi! PSWebApi is a simple library for building ASP.NET Web APIs (RESTful Services) by PowerShell Scripts out of the box. See details in https://github.com/DataBooster/PS-WebApi.")]
+[assembly: AssemblyTitle("Test-Args")]
+[assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("Abel Cheng")]
-[assembly: AssemblyProduct("DataBooster.PSWebApi")]
-[assembly: AssemblyCopyright("Copyright © 2016 Abel Cheng")]
+[assembly: AssemblyCompany("")]
+[assembly: AssemblyProduct("Test-Args")]
+[assembly: AssemblyCopyright("Copyright ©  2016")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
@@ -20,7 +20,7 @@ using System.Runtime.InteropServices;
 [assembly: ComVisible(false)]
 
 // The following GUID is for the ID of the typelib if this project is exposed to COM
-[assembly: Guid("90f62a14-e9dc-40d8-bd0c-2060b0b580b2")]
+[assembly: Guid("e9ccfd22-e886-4c28-aa3b-b8c2945b5c77")]
 
 // Version information for an assembly consists of the following four values:
 //
@@ -32,6 +32,5 @@ using System.Runtime.InteropServices;
 // You can specify all the values or you can default the Build and Revision Numbers 
 // by using the '*' as shown below:
 // [assembly: AssemblyVersion("1.0.*")]
-[assembly: AssemblyVersion("1.0.12.0")]
-[assembly: AssemblyFileVersion("1.0.12.0")]
-[assembly: AssemblyInformationalVersion("1.0.12-alpha")]
+[assembly: AssemblyVersion("1.0.0.0")]
+[assembly: AssemblyFileVersion("1.0.0.0")]

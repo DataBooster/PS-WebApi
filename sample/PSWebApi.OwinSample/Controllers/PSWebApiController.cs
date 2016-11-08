@@ -1,4 +1,5 @@
-﻿using System.Net.Http;
+﻿using System.IO;
+using System.Net.Http;
 using System.Web.Http;
 using System.Collections.Generic;
 using Newtonsoft.Json.Linq;
@@ -20,9 +21,24 @@ namespace PSWebApi.OwinSample.Controllers
 		[AcceptVerbs("GET", "POST", "PUT", "DELETE")]
 		public HttpResponseMessage InvokeCMD(string script, JToken argumentsFromBody)
 		{
-			string allArguments = this.Request.BuildCmdArguments(argumentsFromBody, ConfigHelper.CmdForceArgumentQuote);
+			string physicalFullPath = script.LocalFullPath();
+			string allArguments = this.Request.BuildCmdArguments(argumentsFromBody, (string arg) =>
+				EscapeCmdArgument(Path.GetExtension(physicalFullPath), arg, ConfigHelper.CmdForceArgumentQuote));
 
-			return this.InvokeCmd(script.LocalFullPath(), allArguments, ConfigHelper.CmdTimeoutSeconds);
+			return this.InvokeCmd(physicalFullPath, allArguments, ConfigHelper.CmdTimeoutSeconds);
+		}
+
+		private string EscapeCmdArgument(string fileExtension, string arg, bool forceQuote)
+		{
+			if (string.IsNullOrWhiteSpace(arg))
+				return "\"" + (arg ?? string.Empty) + "\"";
+
+			switch (fileExtension.ToUpperInvariant())
+			{
+				case "EXE": return CmdArgumentsBuilder.EscapeExeArgument(arg, forceQuote);
+				case "BAT": return CmdArgumentsBuilder.EscapeExeArgument(arg, forceQuote);
+				default: return arg;
+			}
 		}
 	}
 }

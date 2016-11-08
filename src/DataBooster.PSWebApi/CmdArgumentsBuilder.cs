@@ -5,6 +5,7 @@ using System;
 using System.Linq;
 using System.Net.Http;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Text.RegularExpressions;
 using Newtonsoft.Json.Linq;
 
@@ -13,25 +14,27 @@ namespace DataBooster.PSWebApi
 	public class CmdArgumentsBuilder
 	{
 		private const string _argSeparator = " ";
-		private static readonly Regex _rgxNoneedQuotes = new Regex(@"^((\\\S|\\$|[^""\s\\])|(""(\\.|""""|[^""\\])*""))+$");
-		private static readonly Regex _rgxEscapeBackslash = new Regex(@"(\\+)(?=""|$)");
-		private List<string> _arguments;
+		private static readonly Regex _rgxNoneedQuotes_Exe = new Regex(@"^((\\\S|\\$|[^""\s\\])|(""(\\.|""""|[^""\\])*""))+$");
+		private static readonly Regex _rgxEscapeBackslash_Exe = new Regex(@"(\\+)(?=""|$)");
+		private readonly List<string> _rawArguments;
+		public Collection<string> RawArguments { get; private set; }
 
 		public CmdArgumentsBuilder()
 		{
-			_arguments = new List<string>();
+			_rawArguments = new List<string>();
+			RawArguments = new Collection<string>(_rawArguments);
 		}
 
 		public CmdArgumentsBuilder Add(string arg)
 		{
-			_arguments.Add(arg);
+			_rawArguments.Add(arg);
 			return this;
 		}
 
 		public CmdArgumentsBuilder Add(IEnumerable<string> args)
 		{
 			if (args != null)
-				_arguments.AddRange(args);
+				_rawArguments.AddRange(args);
 
 			return this;
 		}
@@ -48,10 +51,10 @@ namespace DataBooster.PSWebApi
 				key = (kvp.Key == null) ? string.Empty : kvp.Key.Trim();
 
 				if (key.Length > 0)
-					_arguments.Add(key);
+					_rawArguments.Add(key);
 
 				if (key.Length > 0 || !IsNullValue(kvp.Value))
-					_arguments.Add((kvp.Value == null) ? string.Empty : kvp.Value.ToString());
+					_rawArguments.Add((kvp.Value == null) ? string.Empty : kvp.Value.ToString());
 			}
 
 			return this;
@@ -102,28 +105,31 @@ namespace DataBooster.PSWebApi
 			return httpRequestMessage == null ? this : Add(httpRequestMessage.GetQueryNameValuePairs());
 		}
 
-		public string ToString(bool forceQuote)
+		public string ToString(Func<string, string> escapeArgument)
 		{
-			return (_arguments.Count == 0) ? string.Empty :
-				string.Join(_argSeparator, _arguments.Select(a => EscapeArgument(a, forceQuote)));
+			if (escapeArgument == null)
+				escapeArgument = (string arg) => arg ?? string.Empty;
+
+			return (_rawArguments.Count == 0) ? string.Empty :
+				string.Join(_argSeparator, _rawArguments.Select(escapeArgument));
 		}
 
-		protected virtual string EscapeArgument(string arg, bool forceQuote)
+		public static string EscapeExeArgument(string arg, bool forceQuote)
 		{
 			if (string.IsNullOrWhiteSpace(arg))
 				return "\"" + (arg ?? string.Empty) + "\"";
 
-			if (forceQuote == false && _rgxNoneedQuotes.IsMatch(arg))
+			if (forceQuote == false && _rgxNoneedQuotes_Exe.IsMatch(arg))
 				return arg;
 
-			string escArg = _rgxEscapeBackslash.Replace(arg, m => m.Groups[1].Value + m.Groups[1].Value);
+			string escArg = _rgxEscapeBackslash_Exe.Replace(arg, m => m.Groups[1].Value + m.Groups[1].Value);
 
 			return "\"" + escArg.Replace("\"", "\\\"") + "\"";
 		}
 
 		public override string ToString()
 		{
-			return ToString(false);
+			return ToString(null);
 		}
 	}
 }

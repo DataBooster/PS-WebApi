@@ -6,7 +6,6 @@ using System.IO;
 using System.Text;
 using System.Threading;
 using System.Diagnostics;
-using System.Collections.Generic;
 
 namespace DataBooster.PSWebApi
 {
@@ -62,13 +61,6 @@ namespace DataBooster.PSWebApi
 					else
 						_sbStandardError.AppendLine(e.Data);
 				};
-		}
-
-		public CmdProcess(string filePath, IEnumerable<string> args, bool forceArgumentQuote = false)
-			: this(filePath)
-		{
-			CmdArgumentsBuilder argsBuilder = new CmdArgumentsBuilder();
-			_processStartInfo.Arguments = argsBuilder.Add(args).ToString(forceArgumentQuote);
 		}
 
 		/// <summary>

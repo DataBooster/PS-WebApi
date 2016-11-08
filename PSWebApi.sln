@@ -25,6 +25,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "sample", "sample", "{89D334
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PSWebApi.OwinSample", "sample\PSWebApi.OwinSample\PSWebApi.OwinSample.csproj", "{DA48E8F1-34DA-450E-8E23-74CB948BA5BF}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Test-Args", "sample\Test-Args\Test-Args.csproj", "{B9D1D338-47FD-4758-B4D2-EC20B2BF5DBB}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -39,6 +41,10 @@ Global
 		{DA48E8F1-34DA-450E-8E23-74CB948BA5BF}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{DA48E8F1-34DA-450E-8E23-74CB948BA5BF}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{DA48E8F1-34DA-450E-8E23-74CB948BA5BF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B9D1D338-47FD-4758-B4D2-EC20B2BF5DBB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B9D1D338-47FD-4758-B4D2-EC20B2BF5DBB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B9D1D338-47FD-4758-B4D2-EC20B2BF5DBB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B9D1D338-47FD-4758-B4D2-EC20B2BF5DBB}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -47,5 +53,6 @@ Global
 		{3322EF0A-2423-4097-A492-BDB828AC759C} = {B2A5B5C8-09F1-4E4A-B472-1097BED74FD5}
 		{8DE869FA-9860-4C54-9B21-FB1C01CD8963} = {B2A5B5C8-09F1-4E4A-B472-1097BED74FD5}
 		{DA48E8F1-34DA-450E-8E23-74CB948BA5BF} = {89D3346F-65AF-4EE0-9FBC-90EDC548B6F1}
+		{B9D1D338-47FD-4758-B4D2-EC20B2BF5DBB} = {89D3346F-65AF-4EE0-9FBC-90EDC548B6F1}
 	EndGlobalSection
 EndGlobal
