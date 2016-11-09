@@ -114,6 +114,8 @@ namespace DataBooster.PSWebApi
 				string.Join(_argSeparator, _rawArguments.Select(escapeArgument));
 		}
 
+		// https://msdn.microsoft.com/en-us/library/17w5ykft.aspx
+		// https://msdn.microsoft.com/en-us/library/a1y7w461.aspx
 		public static string EscapeExeArgument(string arg, bool forceQuote)
 		{
 			if (string.IsNullOrWhiteSpace(arg))

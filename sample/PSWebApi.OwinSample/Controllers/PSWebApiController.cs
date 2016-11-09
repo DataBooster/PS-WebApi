@@ -22,23 +22,11 @@ namespace PSWebApi.OwinSample.Controllers
 		public HttpResponseMessage InvokeCMD(string script, JToken argumentsFromBody)
 		{
 			string physicalFullPath = script.LocalFullPath();
+			CmdArgumentResolver cmdArgumentResolver = new CmdArgumentResolver(Path.GetExtension(physicalFullPath));
 			string allArguments = this.Request.BuildCmdArguments(argumentsFromBody, (string arg) =>
-				EscapeCmdArgument(Path.GetExtension(physicalFullPath), arg, ConfigHelper.CmdForceArgumentQuote));
+				cmdArgumentResolver.Quote(arg, ConfigHelper.CmdForceArgumentQuote));
 
 			return this.InvokeCmd(physicalFullPath, allArguments, ConfigHelper.CmdTimeoutSeconds);
-		}
-
-		private string EscapeCmdArgument(string fileExtension, string arg, bool forceQuote)
-		{
-			if (string.IsNullOrWhiteSpace(arg))
-				return "\"" + (arg ?? string.Empty) + "\"";
-
-			switch (fileExtension.ToUpperInvariant())
-			{
-				case "EXE": return CmdArgumentsBuilder.EscapeExeArgument(arg, forceQuote);
-				case "BAT": return CmdArgumentsBuilder.EscapeExeArgument(arg, forceQuote);
-				default: return arg;
-			}
 		}
 	}
 }
