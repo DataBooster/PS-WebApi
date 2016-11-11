@@ -16,6 +16,7 @@ namespace DataBooster.PSWebApi
 		private const string _argSeparator = " ";
 		private static readonly Regex _rgxNoneedQuotes_Exe = new Regex(@"^((\\\S|\\$|[^""\s\\])|(""(\\.|""""|[^""\\])*""))+$");
 		private static readonly Regex _rgxEscapeBackslash_Exe = new Regex(@"(\\+)(?=""|$)");
+		private static readonly Regex _rgxNoneedQuotes_Bat = new Regex(@"^([^""\s&|<>()^]|\^[&|<>()^]|(""[^""]*""))+$");
 		private readonly List<string> _rawArguments;
 		public Collection<string> RawArguments { get; private set; }
 
@@ -116,17 +117,28 @@ namespace DataBooster.PSWebApi
 
 		// https://msdn.microsoft.com/en-us/library/17w5ykft.aspx
 		// https://msdn.microsoft.com/en-us/library/a1y7w461.aspx
-		public static string EscapeExeArgument(string arg, bool forceQuote)
+		public static string QuoteExeArgument(string rawArg, bool forceQuote)
 		{
-			if (string.IsNullOrWhiteSpace(arg))
-				return "\"" + (arg ?? string.Empty) + "\"";
+			if (string.IsNullOrWhiteSpace(rawArg))
+				return "\"" + (rawArg ?? string.Empty) + "\"";
 
-			if (forceQuote == false && _rgxNoneedQuotes_Exe.IsMatch(arg))
-				return arg;
+			if (forceQuote == false && _rgxNoneedQuotes_Exe.IsMatch(rawArg))
+				return rawArg;
 
-			string escArg = _rgxEscapeBackslash_Exe.Replace(arg, m => m.Groups[1].Value + m.Groups[1].Value);
+			string escArg = _rgxEscapeBackslash_Exe.Replace(rawArg, m => m.Groups[1].Value + m.Groups[1].Value);
 
 			return "\"" + escArg.Replace("\"", "\\\"") + "\"";
+		}
+
+		public static string QuoteBatArgument(string rawArg, bool forceQuote)
+		{
+			if (string.IsNullOrWhiteSpace(rawArg))
+				return "\"" + (rawArg ?? string.Empty) + "\"";
+
+			if (forceQuote == false && _rgxNoneedQuotes_Bat.IsMatch(rawArg))
+				return rawArg;
+
+			return "\"" + rawArg.Replace("\"", "\"\"") + "\"";
 		}
 
 		public override string ToString()

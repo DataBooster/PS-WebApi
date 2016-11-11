@@ -18,16 +18,10 @@ namespace PSWebApi.OwinSample
 
 			switch (_fileExtension)
 			{
-				case ".EXE": return CmdArgumentsBuilder.EscapeExeArgument(rawArg, forceQuote);
-				case ".BAT": return EscapeBatArgument(rawArg);
+				case ".EXE": return CmdArgumentsBuilder.QuoteExeArgument(rawArg, forceQuote);
+				case ".BAT": return CmdArgumentsBuilder.QuoteBatArgument(rawArg, forceQuote);
 				default: return rawArg;
 			}
-		}
-
-		protected virtual string EscapeBatArgument(string rawArg)
-		{
-			// todo
-			return rawArg;
 		}
 	}
 }

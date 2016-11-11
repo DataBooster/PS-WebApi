@@ -10,7 +10,7 @@ namespace Test_Args
 			Console.OutputEncoding = Encoding.UTF8;
 
 			for (int i = 0; i < args.Length; i++)
-				Console.WriteLine("args[{0}]:({1})", i, args[i]);
+				Console.WriteLine("args[{0}]:{{{1}}}", i, args[i]);
 
 			return 0;
 		}
