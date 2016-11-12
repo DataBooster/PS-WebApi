@@ -14,22 +14,22 @@ namespace DataBooster.PSWebApi
 {
 	public static partial class PSControllerExtensions
 	{
-		public static string BuildCmdArguments(this HttpRequestMessage request, IEnumerable<string> argsFromBody, Func<string, string> escapeArgument)
+		public static string BuildCmdArguments(this HttpRequestMessage request, IEnumerable<string> argsFromBody, Func<string, string> funcQuoteArgument)
 		{
 			CmdArgumentsBuilder argsBuilder = new CmdArgumentsBuilder();
-			return argsBuilder.AddFromQueryString(request).Add(argsFromBody).ToString(escapeArgument);
+			return argsBuilder.AddFromQueryString(request).Add(argsFromBody).ToString(funcQuoteArgument);
 		}
 
-		public static string BuildCmdArguments(this HttpRequestMessage request, IEnumerable<KeyValuePair<string, object>> argsFromBody, Func<string, string> escapeArgument)
+		public static string BuildCmdArguments(this HttpRequestMessage request, IEnumerable<KeyValuePair<string, object>> argsFromBody, Func<string, string> funcQuoteArgument)
 		{
 			CmdArgumentsBuilder argsBuilder = new CmdArgumentsBuilder();
-			return argsBuilder.AddFromQueryString(request).Add(argsFromBody).ToString(escapeArgument);
+			return argsBuilder.AddFromQueryString(request).Add(argsFromBody).ToString(funcQuoteArgument);
 		}
 
-		public static string BuildCmdArguments(this HttpRequestMessage request, JToken argsFromBody, Func<string, string> escapeArgument)
+		public static string BuildCmdArguments(this HttpRequestMessage request, JToken argsFromBody, Func<string, string> funcQuoteArgument)
 		{
 			CmdArgumentsBuilder argsBuilder = new CmdArgumentsBuilder();
-			return argsBuilder.AddFromQueryString(request).Add(argsFromBody).ToString(escapeArgument);
+			return argsBuilder.AddFromQueryString(request).Add(argsFromBody).ToString(funcQuoteArgument);
 		}
 
 		public static HttpResponseMessage InvokeCmd(this ApiController apiController, string scriptPath, string arguments, int timeoutSeconds = Timeout.Infinite)

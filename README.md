@@ -8,25 +8,25 @@ PSWebApi is a simple library for building ASP.NET Web APIs (RESTful Services) by
 Similar to the sister repository [DbWebApi](https://github.com/DataBooster/DbWebApi), any managed http client can invoke PowerShell scripts, batch files and executables through the PS-WebApi as the following,
 
 **PowerShell**:
-- `http://`localhost:1608/**ps.json**/*ps-scripts/test-args.ps1?p1=1&=arg...*  
+- `http://base-uri`/**ps.json**/*ps-scripts/test-args.ps1?p1=1&=arg...*  
 *(returns the result object as JSON)*
-- `http://`localhost:1608/**ps.xml**/*ps-scripts/test-args.ps1?p1=1&=arg...*  
+- `http://base-uri`/**ps.xml**/*ps-scripts/test-args.ps1?p1=1&=arg...*  
 *(returns the result object as XML)*
-- `http://`localhost:1608/**ps.csv**/*ps-scripts/test-args.ps1?p1=1&=arg...*  
+- `http://base-uri`/**ps.csv**/*ps-scripts/test-args.ps1?p1=1&=arg...*  
 *(returns the result object as CSV)*
-- `http://`localhost:1608/**ps.html**/*ps-scripts/test-args.ps1?p1=1&=arg...*  
+- `http://base-uri`/**ps.html**/*ps-scripts/test-args.ps1?p1=1&=arg...*  
 *(returns the result object as HTML)*
-- `http://`localhost:1608/**ps.string**/*ps-scripts/test-args.ps1?p1=1&=arg...*  
+- `http://base-uri`/**ps.string**/*ps-scripts/test-args.ps1?p1=1&=arg...*  
 *(returns the result object as plain text)*
-- `http://`localhost:1608/**ps.null**/*ps-scripts/test-args.ps1?p1=1&=arg...*  
+- `http://base-uri`/**ps.null**/*ps-scripts/test-args.ps1?p1=1&=arg...*  
 *(discards the result and returns empty)*
 
 **Batch**:
-- `http://`localhost:1608/**cmd**/*bat-scripts/test-args.bat?a1=1&=arg...*  
+- `http://base-uri`/**cmd**/*bat-scripts/test-args.bat?a1=1&=arg...*  
 *(captures the StdOut and returns it as plain text)*
 
 **Executable**:
-- `http://`localhost:1608/**cmd**/*exe-programs/test-args.exe?a1=1&=arg...*  
+- `http://base-uri`/**cmd**/*exe-programs/test-args.exe?a1=1&=arg...*  
 *(captures the StdOut and returns it as plain text)*
 
 Often times, in some intranet applications, some functional requirements can be quickly implemented by succinct PowerShell scripts or command line scripts. However, for some integratability reason, this practice was out of sight from most existing projects.
@@ -66,8 +66,8 @@ The only one configuration item that must be customized is the **ScriptRoot** in
 ## HTTP Client
 #### Request-URI
 
-If there is a PowerShell script "D:\scripts-root\Dept1\ps\test\demo1.ps1", the HTTP client should call it by URL like `http://localhost:1608/ps.json`/__Dept1/ps/test/demo1.ps1__?p1=1&=arg....  
-If there is a batch file "D:\scripts-root\Dept1\bat\test\demo2.bat", the HTTP client should call it by URL like `http://localhost:1608/cmd`/__Dept1/bat/test/demo2.bat__?=1&=arg....  
+If there is a PowerShell script "D:\scripts-root\Dept1\ps\test\demo1.ps1", the HTTP client should call it by URL like `http://base-uri/ps.json`/__Dept1/ps/test/demo1.ps1__?p1=1&=arg....  
+If there is a batch file "D:\scripts-root\Dept1\bat\test\demo2.bat", the HTTP client should call it by URL like `http://base-uri/cmd`/__Dept1/bat/test/demo2.bat__?=1&=arg....  
 Calling executable file follows the same pattern as batch file.
 
 #### Response MediaType
@@ -226,21 +226,32 @@ When there is only one item (single value) in the array, the single JSON value c
 test-args.bat "single value argument"
     ```
 
-- ***Escaping***  
-Due to the particularity of Windows command line argument parsing, PSWebApi uses the following rules by default to determine whether or not a string value must be surrounded by extra double quotation marks:
-    - A string will remain unchanged if the command-line parser (CMD.EXE) can interpret it as a single argument;  
+- ***Escaping and Quoting***  
+Since there is no unified standard to escape and quote a Windows command line argument, it needs to be fully controlled by your own customized PSWebApi service *(please see a reference implementation [CmdArgumentResolver.cs](https://github.com/DataBooster/PS-WebApi/blob/master/sample/PSWebApi.OwinSample/CmdArgumentResolver.cs) in the sample project)*. The PSWebApi library only offers two common methods for escaping and quoting:
+    - CmdArgumentsBuilder.**QuoteExeArgument**  
+For most Microsoft C/C++/C# console applications (follow the rules described in https://msdn.microsoft.com/en-us/library/17w5ykft.aspx or https://msdn.microsoft.com/en-us/library/a1y7w461.aspx):
+        1. A string will remain unchanged if it can be interpreted (by [CommandLineToArgvW](https://msdn.microsoft.com/en-us/library/windows/desktop/bb776391.aspx)) as a single argument;  
 For examples,  
     `3.14`  
     `A_string_without_white_space`  
     `"A string already surrounded by double quotation marks"`  
     `/name_without_white_space:"value with spaces"`  
-    - Otherwise, if a string would be interpreted as multiple broken arguments or a string contains any unclosed double-quotation mark *(non-literal)*, then the original string will be surrounded by an extra pair of double-quotation marks at the outermost layer, and all the originally nested quotes will be escaped using the `\"` as **literal** double-quotation marks.  
+        2. Otherwise, if a string would be interpreted as multiple broken arguments or a string contains any unclosed double-quotation mark *(non-literal)*, then the original string will be surrounded by an extra pair of double-quotation marks at the outermost layer, and all the originally nested quotes will be escaped using the `\"` as **literal** double-quotation marks.  
 For examples,  
-`She's 5'5" tall.`  
-will be encoded/escaped as  
-`"She's 5'5\" tall."`
+    `She's 5'5" tall.`  
+    will be encoded/escaped as  
+    `"She's 5'5\" tall."`
 
-    A test batch [test-args.bat](https://github.com/DataBooster/PS-WebApi/tree/master/sample/PSWebApi.OwinSample/scripts-root/bat-scripts) *(shipped with the sample project [PSWebApi.OwinSample](https://github.com/DataBooster/PS-WebApi/releases))* can be used to give it a try.
+        A test batch [test-args.exe](https://github.com/DataBooster/PS-WebApi/tree/master/sample/Test-Args) *(build release mode to `..\PSWebApi.OwinSample\scripts-root\exe-apps\`)* can be used to give it a try.
+
+    - CmdArgumentsBuilder.**QuoteBatArgument**  
+For batch files:
+        1. A string will remain unchanged if it can be interpreted (by Windows command-line parser *CMD.EXE*) as a single argument;
+        2. Otherwise, if a string would be interpreted as multiple broken arguments or a string contains any unclosed double-quotation mark (non-literal), then the original string will be surrounded by an extra pair of double-quotation marks at the outermost layer, and each originally nested double-quotation mark will be escaped as double double-quotation marks.  
+For examples,  
+    `She's 5'5" tall.`  
+    will be encoded/escaped as  
+    `"She's 5'5"" tall."`
 
 ## Conventions
 #### HTTP status of PowerShell response

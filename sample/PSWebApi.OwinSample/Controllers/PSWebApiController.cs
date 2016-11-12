@@ -22,9 +22,8 @@ namespace PSWebApi.OwinSample.Controllers
 		public HttpResponseMessage InvokeCMD(string script, JToken argumentsFromBody)
 		{
 			string physicalFullPath = script.LocalFullPath();
-			CmdArgumentResolver cmdArgumentResolver = new CmdArgumentResolver(Path.GetExtension(physicalFullPath));
-			string allArguments = this.Request.BuildCmdArguments(argumentsFromBody, (string arg) =>
-				cmdArgumentResolver.Quote(arg, ConfigHelper.CmdForceArgumentQuote));
+			CmdArgumentResolver argResolver = new CmdArgumentResolver(Path.GetExtension(physicalFullPath));
+			string allArguments = argResolver.GatherInputArguments(this.Request, argumentsFromBody, ConfigHelper.CmdForceArgumentQuote);
 
 			return this.InvokeCmd(physicalFullPath, allArguments, ConfigHelper.CmdTimeoutSeconds);
 		}

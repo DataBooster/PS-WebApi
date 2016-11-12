@@ -1,4 +1,7 @@
-﻿using DataBooster.PSWebApi;
+﻿using System;
+using System.Net.Http;
+using Newtonsoft.Json.Linq;
+using DataBooster.PSWebApi;
 
 namespace PSWebApi.OwinSample
 {
@@ -11,7 +14,7 @@ namespace PSWebApi.OwinSample
 			_fileExtension = (fileExtension == null) ? string.Empty : fileExtension.Trim().ToUpperInvariant();
 		}
 
-		public string Quote(string rawArg, bool forceQuote = false)
+		public virtual string Quote(string rawArg, bool forceQuote = false)
 		{
 			if (string.IsNullOrWhiteSpace(rawArg))
 				return "\"" + (rawArg ?? string.Empty) + "\"";
@@ -22,6 +25,16 @@ namespace PSWebApi.OwinSample
 				case ".BAT": return CmdArgumentsBuilder.QuoteBatArgument(rawArg, forceQuote);
 				default: return rawArg;
 			}
+		}
+
+		public string GatherInputArguments(HttpRequestMessage request, JToken argumentsFromBody, bool forceQuote)
+		{
+			if (request == null)
+				throw new ArgumentNullException("request");
+
+			CmdArgumentsBuilder argsBuilder = new CmdArgumentsBuilder();
+
+			return argsBuilder.AddFromQueryString(request).Add(argumentsFromBody).ToString((string arg) => Quote(arg, forceQuote));
 		}
 	}
 }
