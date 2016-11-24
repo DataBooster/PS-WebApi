@@ -12,7 +12,6 @@ using System.Net.Http.Headers;
 using System.Web.Http;
 using System.Web.Http.Controllers;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Management.Automation;
 using System.Management.Automation.Runspaces;
 
@@ -67,7 +66,7 @@ namespace DataBooster.PSWebApi
 			}
 		}
 
-		private static string GetPsResult(Collection<PSObject> psResult, Encoding encoding)
+		private static string GetPsResult(IList<PSObject> psResult, Encoding encoding)
 		{
 			if (psResult == null || psResult.Count == 0)
 				return string.Empty;
