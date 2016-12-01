@@ -1,6 +1,8 @@
 ﻿using System.IO;
 using System.Net.Http;
 using System.Web.Http;
+using System.Threading;
+using System.Threading.Tasks;
 using System.Collections.Generic;
 using Newtonsoft.Json.Linq;
 using DataBooster.PSWebApi;
@@ -11,11 +13,11 @@ namespace PSWebApi.OwinSample.Controllers
 	public class PSWebApiController : ApiController
 	{
 		[AcceptVerbs("GET", "POST", "PUT", "DELETE")]
-		public HttpResponseMessage InvokePS(string script, Dictionary<string, object> parametersFromBody)
+		public Task<HttpResponseMessage> InvokePS(string script, Dictionary<string, object> parametersFromBody, CancellationToken cancellationToken)
 		{
 			IEnumerable<KeyValuePair<string, object>> allParameters = this.Request.GatherInputParameters(parametersFromBody);
 
-			return this.InvokePowerShell(script.LocalFullPath(), allParameters);
+			return this.InvokePowerShellAsync(script.LocalFullPath(), allParameters, cancellationToken);
 		}
 
 		[AcceptVerbs("GET", "POST", "PUT", "DELETE")]

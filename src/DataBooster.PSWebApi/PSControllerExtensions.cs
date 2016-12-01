@@ -55,14 +55,14 @@ namespace DataBooster.PSWebApi
 					ps.AddCommand(converter.ConversionCmdlet, true).Commands.AddParameters(converter.CmdletParameters);
 
 				string stringResult = GetPsResult(ps.Invoke(), encoding);
-				HttpStatusCode httpStatusCode = ps.HadErrors ? HttpStatusCode.InternalServerError :
-					(string.IsNullOrEmpty(stringResult) ? HttpStatusCode.NoContent : HttpStatusCode.OK);
+
+				ps.CheckErrors(false);
 
 				StringContent responseContent = new StringContent(stringResult, encoding, contentNegotiator.NegotiatedMediaType.MediaType);
 
 				responseContent.Headers.SetContentHeader(ps.Streams);
 
-				return new HttpResponseMessage(httpStatusCode) { Content = responseContent };
+				return new HttpResponseMessage(string.IsNullOrEmpty(stringResult) ? HttpStatusCode.NoContent : HttpStatusCode.OK) { Content = responseContent };
 			}
 		}
 
@@ -120,21 +120,31 @@ namespace DataBooster.PSWebApi
 			return psObject.ToString();
 		}
 
-		private static void SetContentHeader(this HttpContentHeaders headers, PSDataStreams invokedStatus)
+		private static void CheckErrors(this PowerShell ps, bool isCancellationRequested)
 		{
-			if (invokedStatus == null)
-				return;
+			PSDataCollection<ErrorRecord> errors = (ps.Streams == null) ? null : ps.Streams.Error;
 
-			if (invokedStatus.Error != null && invokedStatus.Error.Count > 0)
+			if (errors != null && errors.Count > 0)
 			{
-				if (invokedStatus.Error.Count == 1)
-					throw invokedStatus.Error[0].Exception;
+				if (errors.Count == 1)
+					throw errors[0].Exception;
 				else
-					throw new AggregateException(string.Join(Environment.NewLine, invokedStatus.Error.Select(e => e.Exception.Message)),
-						invokedStatus.Error.Select(e => e.Exception));
+					throw new AggregateException(string.Join(Environment.NewLine, errors.Select(e => e.Exception.Message)),
+						errors.Select(e => e.Exception));
 			}
 
-			if (headers == null)
+			if (ps.HadErrors)
+			{
+				if (isCancellationRequested)
+					throw new OperationCanceledException();		//	PipelineStoppedException();
+				else
+					throw new InvalidPowerShellStateException();
+			}
+		}
+
+		private static void SetContentHeader(this HttpContentHeaders headers, PSDataStreams invokedStatus)
+		{
+			if (invokedStatus == null || headers == null)
 				return;
 
 			if (invokedStatus.Warning != null && invokedStatus.Warning.Count > 0)
