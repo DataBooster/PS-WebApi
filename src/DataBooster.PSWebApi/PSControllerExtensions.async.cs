@@ -33,7 +33,7 @@ namespace DataBooster.PSWebApi
 				if (!string.IsNullOrWhiteSpace(converter.ConversionCmdlet))
 					ps.AddCommand(converter.ConversionCmdlet, true).Commands.AddParameters(converter.CmdletParameters);
 
-				string stringResult = GetPsResult(await ps.InvokeAsync(cancellationToken), encoding);
+				string stringResult = GetPsResult(await ps.InvokeAsync(cancellationToken).ConfigureAwait(false), encoding);
 
 				ps.CheckErrors(cancellationToken.IsCancellationRequested);
 
@@ -47,18 +47,35 @@ namespace DataBooster.PSWebApi
 
 		private async static Task<IList<PSObject>> InvokeAsync(this PowerShell ps, CancellationToken cancellationToken)
 		{
-			using (cancellationToken.Register(p =>
-				{
-					try
-					{
-						((PowerShell)p).Stop();
-					}
-					catch
-					{
-					}
-				}, ps))
+			using (cancellationToken.Register(p => { ((PowerShell)p).Stop(); }, ps))
 			{
 				return await Task.Run<IList<PSObject>>(() => ps.Invoke(), cancellationToken).ConfigureAwait(false);
+			}
+		}
+
+		public static async Task<HttpResponseMessage> InvokeCmdAsync(this ApiController apiController, string scriptPath, string arguments, CancellationToken cancellationToken)
+		{
+			PSContentNegotiator contentNegotiator = new PSContentNegotiator(apiController.Request);
+			Encoding encoding = contentNegotiator.NegotiatedEncoding;
+
+			using (CmdProcess cmd = new CmdProcess(scriptPath, arguments) { OutputEncoding = encoding })
+			{
+				int exitCode = await cmd.ExecuteAsync(cancellationToken).ConfigureAwait(false);
+				string responseString = cmd.GetStandardError();
+				HttpStatusCode httpStatusCode;
+
+				if (exitCode == 0 && string.IsNullOrEmpty(responseString))
+				{
+					responseString = cmd.GetStandardOutput();
+					httpStatusCode = string.IsNullOrEmpty(responseString) ? HttpStatusCode.NoContent : HttpStatusCode.OK;
+				}
+				else
+					httpStatusCode = HttpStatusCode.InternalServerError;
+
+				StringContent responseContent = new StringContent(responseString, encoding, contentNegotiator.NegotiatedMediaType.MediaType);
+				responseContent.Headers.Add("Exit-Code", exitCode.ToString());
+
+				return new HttpResponseMessage(httpStatusCode) { Content = responseContent };
 			}
 		}
 	}
