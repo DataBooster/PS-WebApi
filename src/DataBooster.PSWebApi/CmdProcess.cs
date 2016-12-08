@@ -35,6 +35,11 @@ namespace DataBooster.PSWebApi
 		private readonly ManualResetEventSlim _waitStandardOutput, _waitStandardError;
 		private readonly WaitHandle[] _waitRedirectionHandles;
 
+		/// <summary>
+		/// Initializes a new instance of the CmdProcess class with the name of an application and a set of command-line arguments.
+		/// </summary>
+		/// <param name="filePath">The path of an application file to run in the process.</param>
+		/// <param name="arguments">Command-line arguments to pass when starting the process.</param>
 		public CmdProcess(string filePath, string arguments = null)
 		{
 			if (filePath != null)
@@ -114,7 +119,7 @@ namespace DataBooster.PSWebApi
 
 			if (cancellationToken.IsCancellationRequested)
 			{
-				_workingTaskCompletionSource.TrySetCanceled();
+				_workingTaskCompletionSource.TrySetCanceled(/*cancellationToken*/);
 				return _workingTaskCompletionSource.Task;
 			}
 
@@ -124,12 +129,14 @@ namespace DataBooster.PSWebApi
 				_process.Exited += OnProcess_Exited;
 			}
 
-			cancellationToken.Register(() =>
+			CancellationTokenRegistration ctr = cancellationToken.Register(() =>
 				{
 					if (_started)
 						_process.Kill();
 					_canceled = true;
 				});
+
+			_workingTaskCompletionSource.Task.ContinueWith((antecedent) => { ctr.Dispose(); });
 
 			_process.Start();
 			_started = true;

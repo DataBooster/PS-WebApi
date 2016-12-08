@@ -7,6 +7,7 @@ using System.Xml;
 using System.Net;
 using System.Text;
 using System.Linq;
+using System.Threading;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Web.Http;
@@ -56,7 +57,7 @@ namespace DataBooster.PSWebApi
 
 				string stringResult = GetPsResult(ps.Invoke(), encoding);
 
-				ps.CheckErrors(false);
+				ps.CheckErrors();
 
 				StringContent responseContent = new StringContent(stringResult, encoding, contentNegotiator.NegotiatedMediaType.MediaType);
 
@@ -120,7 +121,7 @@ namespace DataBooster.PSWebApi
 			return psObject.ToString();
 		}
 
-		private static void CheckErrors(this PowerShell ps, bool isCancellationRequested)
+		private static void CheckErrors(this PowerShell ps, CancellationToken cancellationToken = default(CancellationToken))
 		{
 			PSDataCollection<ErrorRecord> errors = (ps.Streams == null) ? null : ps.Streams.Error;
 
@@ -135,10 +136,8 @@ namespace DataBooster.PSWebApi
 
 			if (ps.HadErrors)
 			{
-				if (isCancellationRequested)
-					throw new OperationCanceledException();		//	PipelineStoppedException();
-				else
-					throw new InvalidPowerShellStateException();
+				cancellationToken.ThrowIfCancellationRequested();	//	PipelineStoppedException();
+				throw new InvalidPowerShellStateException();
 			}
 		}
 

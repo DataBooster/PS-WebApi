@@ -35,7 +35,7 @@ namespace DataBooster.PSWebApi
 
 				string stringResult = GetPsResult(await ps.InvokeAsync(cancellationToken).ConfigureAwait(false), encoding);
 
-				ps.CheckErrors(cancellationToken.IsCancellationRequested);
+				ps.CheckErrors(cancellationToken);
 
 				StringContent responseContent = new StringContent(stringResult, encoding, contentNegotiator.NegotiatedMediaType.MediaType);
 
