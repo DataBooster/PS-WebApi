@@ -28,7 +28,7 @@ namespace DataBooster.PSWebApi
 			{
 				ps.RunspacePool = _runspacePool;
 				ps.AddCommand("Set-Location").AddParameter("LiteralPath", Path.GetDirectoryName(scriptPath));
-				ps.AddStatement().AddCommand(scriptPath, true).Commands.AddParameters(parameters);
+				ps/*.AddStatement()*/.AddCommand(scriptPath, true).Commands.AddParameters(parameters);
 
 				if (!string.IsNullOrWhiteSpace(converter.ConversionCmdlet))
 					ps.AddCommand(converter.ConversionCmdlet, true).Commands.AddParameters(converter.CmdletParameters);
@@ -47,9 +47,21 @@ namespace DataBooster.PSWebApi
 
 		private async static Task<IList<PSObject>> InvokeAsync(this PowerShell ps, CancellationToken cancellationToken)
 		{
-			using (cancellationToken.Register(p => { ((PowerShell)p).Stop(); }, ps))
+			using (cancellationToken.Register(
+				p =>
+				{
+					((PowerShell)p).BeginStop(
+						(ar) =>
+						{
+							try { ps.EndStop(ar); }
+							catch { }
+						}, null);
+				}, ps))
 			{
-				return await Task.Run<IList<PSObject>>(() => ps.Invoke(), cancellationToken).ConfigureAwait(false);
+				var taskFactory = new TaskFactory<IList<PSObject>>(cancellationToken);
+
+				return await taskFactory.FromAsync((callback, state) => ps.BeginInvoke<object>(null, null, callback, state), ps.EndInvoke, null).ConfigureAwait(false);
+				//	return await Task.Run<IList<PSObject>>(() => ps.Invoke(), cancellationToken).ConfigureAwait(false);
 			}
 		}
 
