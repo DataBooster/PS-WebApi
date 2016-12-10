@@ -47,19 +47,9 @@ namespace DataBooster.PSWebApi
 
 		private async static Task<IList<PSObject>> InvokeAsync(this PowerShell ps, CancellationToken cancellationToken)
 		{
-			using (cancellationToken.Register(
-				p =>
-				{
-					((PowerShell)p).BeginStop(
-						(ar) =>
-						{
-							try { ps.EndStop(ar); }
-							catch { }
-						}, null);
-				}, ps))
+			using (cancellationToken.Register(p => { ((PowerShell)p).BeginStop((ar) => { }, null); }, ps))
 			{
 				var taskFactory = new TaskFactory<IList<PSObject>>(cancellationToken);
-
 				return await taskFactory.FromAsync((callback, state) => ps.BeginInvoke<object>(null, null, callback, state), ps.EndInvoke, null).ConfigureAwait(false);
 				//	return await Task.Run<IList<PSObject>>(() => ps.Invoke(), cancellationToken).ConfigureAwait(false);
 			}
