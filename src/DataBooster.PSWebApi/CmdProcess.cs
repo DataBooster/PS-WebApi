@@ -116,12 +116,25 @@ namespace DataBooster.PSWebApi
 				throw new InvalidOperationException();
 
 			_workingTaskCompletionSource = new TaskCompletionSource<int>();
+			CancellationTokenRegistration ctr;
 
-			if (cancellationToken.IsCancellationRequested)
+			if (cancellationToken.CanBeCanceled)
 			{
-				_workingTaskCompletionSource.TrySetCanceled(/*cancellationToken*/);
-				return _workingTaskCompletionSource.Task;
+				if (cancellationToken.IsCancellationRequested)
+					return cancellationToken.AsCanceledTask<int>(_workingTaskCompletionSource);
+
+				ctr = cancellationToken.Register(() =>
+					{
+						lock (_process)
+						{
+							if (_started)
+								_process.Kill();
+							_canceled = true;
+						}
+					});
 			}
+			else
+				ctr = new CancellationTokenRegistration();
 
 			if (!_process.EnableRaisingEvents)
 			{
@@ -129,19 +142,20 @@ namespace DataBooster.PSWebApi
 				_process.Exited += OnProcess_Exited;
 			}
 
-			CancellationTokenRegistration ctr = cancellationToken.Register(() =>
+			_workingTaskCompletionSource.Task.ContinueWith((antecedent) => { try { ctr.Dispose(); } catch { } });
+
+			lock (_process)
+			{
+				if (_canceled)
+					_workingTaskCompletionSource.TrySetCanceled(/*cancellationToken*/);
+				else
 				{
-					if (_started)
-						_process.Kill();
-					_canceled = true;
-				});
-
-			_workingTaskCompletionSource.Task.ContinueWith((antecedent) => { ctr.Dispose(); });
-
-			_process.Start();
-			_started = true;
-			_process.BeginOutputReadLine();
-			_process.BeginErrorReadLine();
+					_process.Start();
+					_started = true;
+					_process.BeginOutputReadLine();
+					_process.BeginErrorReadLine();
+				}
+			}
 
 			return _workingTaskCompletionSource.Task;
 		}

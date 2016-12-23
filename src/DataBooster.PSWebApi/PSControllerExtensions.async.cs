@@ -1,6 +1,7 @@
 ﻿// Copyright (c) 2016 Abel Cheng <abelcys@gmail.com>. Licensed under the MIT license.
 // Repository: https://pswebapi.codeplex.com/, https://github.com/DataBooster/PS-WebApi
 
+using System;
 using System.IO;
 using System.Text;
 using System.Net;
@@ -45,14 +46,26 @@ namespace DataBooster.PSWebApi
 			}
 		}
 
-		private async static Task<IList<PSObject>> InvokeAsync(this PowerShell ps, CancellationToken cancellationToken)
+		private static Task<IList<PSObject>> InvokeAsync(this PowerShell ps, CancellationToken cancellationToken)
 		{
-			using (cancellationToken.Register(p => { ((PowerShell)p).BeginStop((ar) => { }, null); }, ps))
+			CancellationTokenRegistration ctr;
+
+			if (cancellationToken.CanBeCanceled)
 			{
-				var taskFactory = new TaskFactory<IList<PSObject>>(cancellationToken);
-				return await taskFactory.FromAsync((callback, state) => ps.BeginInvoke<object>(null, null, callback, state), ps.EndInvoke, null).ConfigureAwait(false);
-				//	return await Task.Run<IList<PSObject>>(() => ps.Invoke(), cancellationToken).ConfigureAwait(false);
+				if (cancellationToken.IsCancellationRequested)
+					return cancellationToken.AsCanceledTask<IList<PSObject>>();
+
+				ctr = cancellationToken.Register(p => { ((PowerShell)p).BeginStop((ar) => { }, null); }, ps);
 			}
+			else
+				ctr = new CancellationTokenRegistration();
+
+			var taskFactory = new TaskFactory<IList<PSObject>>(cancellationToken);
+			var task = taskFactory.FromAsync((callback, state) => ps.BeginInvoke<object>(null, null, callback, state), ps.EndInvoke, null);
+
+			task.ContinueWith((antecedent) => { try { ctr.Dispose(); } catch { } });
+
+			return task;
 		}
 
 		public static async Task<HttpResponseMessage> InvokeCmdAsync(this ApiController apiController, string scriptPath, string arguments, CancellationToken cancellationToken)
@@ -79,6 +92,19 @@ namespace DataBooster.PSWebApi
 
 				return new HttpResponseMessage(httpStatusCode) { Content = responseContent };
 			}
+		}
+
+		internal static Task<TResult> AsCanceledTask<TResult>(this CancellationToken cancellationToken, TaskCompletionSource<TResult> taskCompletionSource = null)
+		{
+			if (!cancellationToken.IsCancellationRequested)
+				throw new InvalidOperationException();
+
+			if (taskCompletionSource == null)
+				taskCompletionSource = new TaskCompletionSource<TResult>();
+
+			taskCompletionSource.TrySetCanceled(/*cancellationToken*/);
+
+			return taskCompletionSource.Task;
 		}
 	}
 }
