@@ -9,24 +9,46 @@ using System.Collections.ObjectModel;
 
 namespace DataBooster.PSWebApi
 {
+	/// <summary>
+	/// Represents a PowerShell converter associated with one or more media types for a HTTP response.
+	/// </summary>
 	public class PSConverterRegistry
 	{
 		private readonly List<MediaTypeHeaderValue> _mediaTypes;
+		/// <summary>
+		/// Gets the collection of media types supported by this PowerShell converter.
+		/// </summary>
 		public Collection<MediaTypeHeaderValue> MediaTypes { get; private set; }
 
 		private readonly string _uriPathExtension;
+		/// <summary>
+		/// Gets the extension of Uri path (Uris ending with the given uriPathExtension) associated with media types supported by this PowerShell converter.
+		/// </summary>
 		public string UriPathExtension { get { return _uriPathExtension; } }
 
 		private readonly string _conversionCmdlet;
+		/// <summary>
+		/// Gets the PowerShell Cmdlet that can be used for converting a PowerShell object to the associated media types formatted string.
+		/// </summary>
 		public string ConversionCmdlet { get { return _conversionCmdlet; } }
 
 		private IEnumerable<KeyValuePair<string, object>> _cmdletParameters;
+		/// <summary>
+		/// Gets or sets the predetermined parameters for the PowerShell Cmdlet associated with this converter.
+		/// </summary>
 		public IEnumerable<KeyValuePair<string, object>> CmdletParameters
 		{
 			get { return _cmdletParameters; }
 			set { _cmdletParameters = value; }
 		}
 
+		/// <summary>
+		/// Initializes a new instance of the PSConverterRegistry class with .
+		/// </summary>
+		/// <param name="mediaTypes"></param>
+		/// <param name="uriPathExtension"></param>
+		/// <param name="conversionCmdlet"></param>
+		/// <param name="cmdletParameters"></param>
 		public PSConverterRegistry(IEnumerable<MediaTypeHeaderValue> mediaTypes, string uriPathExtension, string conversionCmdlet, IEnumerable<KeyValuePair<string, object>> cmdletParameters = null)
 		{
 			if (mediaTypes == null)

@@ -193,12 +193,20 @@ namespace DataBooster.PSWebApi
 		}
 
 		#region IDisposable Members
+		/// <summary>
+		/// Releases all resources used by the CmdProcess.
+		/// </summary>
 		public void Dispose()
 		{
 			Dispose(true);
 			GC.SuppressFinalize(this);
 		}
 
+		/// <summary>
+		/// <para>This API supports the product infrastructure and is not intended to be used directly from your code.</para>
+		/// <para>Release all resources used by this CmdProcess.</para>
+		/// </summary>
+		/// <param name="disposing">true to release both managed and unmanaged resources; false to release only unmanaged resources.</param>
 		protected virtual void Dispose(bool disposing)
 		{
 			if (!_disposed)

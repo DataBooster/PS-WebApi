@@ -8,11 +8,14 @@ using System.Net.Http.Formatting;
 namespace DataBooster.PSWebApi
 {
 	/// <summary>
-	/// <see cref="MediaTypeFormatter"/> class to handle PowerShell supported output formats. Such as JSON, XML, CSV, HTML, String, etc.
+	/// <see cref="MediaTypeFormatter"/>Class to handle PowerShell supported output formats. Such as JSON, XML, CSV, HTML, String, etc.
 	/// </summary>
 	public class PSMediaTypeFormatter : JsonMediaTypeFormatter
 	{
 		private readonly PSConfiguration _psConfiguration;
+		/// <summary>
+		/// Gets the PSConfiguration being used by current instance of PSMediaTypeFormatter.
+		/// </summary>
 		public PSConfiguration Configuration { get { return _psConfiguration; } }
 
 		/// <summary>
