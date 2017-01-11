@@ -16,6 +16,14 @@ namespace DataBooster.PSWebApi
 {
 	public static partial class PSControllerExtensions
 	{
+		/// <summary>
+		/// Asynchronously invokes the PowerShell script by using the supplied input parameters.
+		/// </summary>
+		/// <param name="apiController">The ApiController. This is an extension method to ApiController, when you use instance method syntax to call this method, omit this parameter.</param>
+		/// <param name="scriptPath">The fully qualified location of the PowerShell script to be run.</param>
+		/// <param name="parameters">A set of parameters to the PowerShell script. The parameter names and values are taken from the keys and values of a collection.</param>
+		/// <param name="cancellationToken"></param>
+		/// <returns></returns>
 		public async static Task<HttpResponseMessage> InvokePowerShellAsync(this ApiController apiController, string scriptPath, IEnumerable<KeyValuePair<string, object>> parameters, CancellationToken cancellationToken)
 		{
 			PSContentNegotiator contentNegotiator = new PSContentNegotiator(apiController.Request);

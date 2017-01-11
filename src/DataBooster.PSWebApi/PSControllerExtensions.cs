@@ -18,6 +18,9 @@ using System.Management.Automation.Runspaces;
 
 namespace DataBooster.PSWebApi
 {
+	/// <summary>
+	/// Provides a set of static methods (extension methods) for invoking PowerShell scripts and batch/executable files from your Web API controller.
+	/// </summary>
 	public static partial class PSControllerExtensions
 	{
 		private static readonly RunspacePool _runspacePool;
@@ -30,6 +33,12 @@ namespace DataBooster.PSWebApi
 			_escapedNewLine = Uri.EscapeDataString(Environment.NewLine).ToLower();
 		}
 
+		/// <summary>
+		/// Gathers input parameters from uri query string and concatenates with HTTP POST body.
+		/// </summary>
+		/// <param name="request">The HTTP request. This is an extension method to HttpRequestMessage, when you use instance method syntax to call this method, omit this parameter.</param>
+		/// <param name="parametersFromBody">The parameters read from body.</param>
+		/// <returns>An IEnumerable{KeyValuePair{string, object}} that contains the concatenated parameters from uri query string and POST body.</returns>
 		public static IEnumerable<KeyValuePair<string, object>> GatherInputParameters(this HttpRequestMessage request, IDictionary<string, object> parametersFromBody)
 		{
 			var queryStrings = request.GetQueryNameValuePairs().Select(entry => new KeyValuePair<string, object>(entry.Key, entry.Value));
@@ -37,6 +46,13 @@ namespace DataBooster.PSWebApi
 			return (parametersFromBody == null) ? queryStrings : queryStrings.Concat(parametersFromBody);
 		}
 
+		/// <summary>
+		/// Synchronously invokes the PowerShell script by using the supplied input parameters.
+		/// </summary>
+		/// <param name="apiController">The ApiController. This is an extension method to ApiController, when you use instance method syntax to call this method, omit this parameter.</param>
+		/// <param name="scriptPath">The fully qualified location of the PowerShell script to be run.</param>
+		/// <param name="parameters">A set of parameters to the PowerShell script. The parameter names and values are taken from the keys and values of a collection.</param>
+		/// <returns>A complete HttpResponseMessage contains result data returned by the PowerShell script.</returns>
 		public static HttpResponseMessage InvokePowerShell(this ApiController apiController, string scriptPath, IEnumerable<KeyValuePair<string, object>> parameters)
 		{
 			PSContentNegotiator contentNegotiator = new PSContentNegotiator(apiController.Request);
@@ -180,6 +196,11 @@ namespace DataBooster.PSWebApi
 			}
 		}
 
+		/// <summary>
+		/// Get current principal user name associated with this request.
+		/// </summary>
+		/// <param name="apiController">The ApiController. This is an extension method to ApiController, when you use instance method syntax to call this method, omit this parameter.</param>
+		/// <returns>The current principal user name associated with this request.</returns>
 		public static string GetUserName(this ApiController apiController)
 		{
 			if (apiController == null)
@@ -191,6 +212,11 @@ namespace DataBooster.PSWebApi
 			return apiController.User.Identity.Name;
 		}
 
+		/// <summary>
+		/// Get current principal user name associated with this request.
+		/// </summary>
+		/// <param name="actionContext">The HttpActionContext. This is an extension method to HttpActionContext, when you use instance method syntax to call this method, omit this parameter.</param>
+		/// <returns>The current principal user name associated with this request.</returns>
 		public static string GetUserName(this HttpActionContext actionContext)
 		{
 			ApiController apiController = actionContext.ControllerContext.Controller as ApiController;
@@ -201,6 +227,12 @@ namespace DataBooster.PSWebApi
 			return GetUserName(apiController);
 		}
 
+		/// <summary>
+		/// Gets the value in current URL route data that is associated with a specified key.
+		/// </summary>
+		/// <param name="actionContext">The HttpActionContext. This is an extension method to HttpActionContext, when you use instance method syntax to call this method, omit this parameter.</param>
+		/// <param name="urlPlaceholderName">The specified key in the URL route data.</param>
+		/// <returns>The value that is associated with the specified key, or null if the key does not exist in URL route data.</returns>
 		public static object GetRouteData(this HttpActionContext actionContext, string urlPlaceholderName)
 		{
 			if (string.IsNullOrWhiteSpace(urlPlaceholderName))
