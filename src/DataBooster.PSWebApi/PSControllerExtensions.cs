@@ -34,7 +34,7 @@ namespace DataBooster.PSWebApi
 		}
 
 		/// <summary>
-		/// Gathers input parameters from uri query string and concatenates with HTTP POST body.
+		/// Gathers input parameters from uri query string and concatenates with JSON parameters from HTTP POST body.
 		/// </summary>
 		/// <param name="request">The HTTP request. This is an extension method to HttpRequestMessage, when you use instance method syntax to call this method, omit this parameter.</param>
 		/// <param name="parametersFromBody">The parameters read from body.</param>

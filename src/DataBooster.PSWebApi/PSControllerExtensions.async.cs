@@ -17,13 +17,13 @@ namespace DataBooster.PSWebApi
 	public static partial class PSControllerExtensions
 	{
 		/// <summary>
-		/// Asynchronously invokes the PowerShell script by using the supplied input parameters.
+		/// Asynchronously invokes a PowerShell script by using the supplied input parameters.
 		/// </summary>
 		/// <param name="apiController">The ApiController. This is an extension method to ApiController, when you use instance method syntax to call this method, omit this parameter.</param>
 		/// <param name="scriptPath">The fully qualified location of the PowerShell script to be run.</param>
 		/// <param name="parameters">A set of parameters to the PowerShell script. The parameter names and values are taken from the keys and values of a collection.</param>
-		/// <param name="cancellationToken"></param>
-		/// <returns></returns>
+		/// <param name="cancellationToken">The cancellation token can be used to request that the operation be abandoned before completing the execution. Exceptions will be reported via the returned Task object.</param>
+		/// <returns>A task representing the asynchronous operation.</returns>
 		public async static Task<HttpResponseMessage> InvokePowerShellAsync(this ApiController apiController, string scriptPath, IEnumerable<KeyValuePair<string, object>> parameters, CancellationToken cancellationToken)
 		{
 			PSContentNegotiator contentNegotiator = new PSContentNegotiator(apiController.Request);
@@ -76,6 +76,14 @@ namespace DataBooster.PSWebApi
 			return task;
 		}
 
+		/// <summary>
+		/// Asynchronously invokes a Windows batch file or executable file by using a set of command-line arguments.
+		/// </summary>
+		/// <param name="apiController">The ApiController. This is an extension method to ApiController, when you use instance method syntax to call this method, omit this parameter.</param>
+		/// <param name="scriptPath">The fully qualified location of an application file (batch file or executable file) to be executed.</param>
+		/// <param name="arguments">Command-line arguments to pass when starting the process.</param>
+		/// <param name="cancellationToken">The cancellation token can be used to request that the operation be abandoned before completing the execution. Exceptions will be reported via the returned Task object.</param>
+		/// <returns>A task representing the asynchronous operation.</returns>
 		public static async Task<HttpResponseMessage> InvokeCmdAsync(this ApiController apiController, string scriptPath, string arguments, CancellationToken cancellationToken)
 		{
 			PSContentNegotiator contentNegotiator = new PSContentNegotiator(apiController.Request);
