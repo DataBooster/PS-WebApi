@@ -71,15 +71,22 @@ namespace DataBooster.PSWebApi
 				if (!string.IsNullOrWhiteSpace(converter.ConversionCmdlet))
 					ps.AddCommand(converter.ConversionCmdlet, true).Commands.AddParameters(converter.CmdletParameters);
 
-				string stringResult = GetPsResult(ps.Invoke(), encoding);
+				try
+				{
+					string stringResult = GetPsResult(ps.Invoke(), encoding);
 
-				ps.CheckErrors();
+					ps.CheckErrors();
 
-				StringContent responseContent = new StringContent(stringResult, encoding, contentNegotiator.NegotiatedMediaType.MediaType);
+					StringContent responseContent = new StringContent(stringResult, encoding, contentNegotiator.NegotiatedMediaType.MediaType);
 
-				responseContent.Headers.SetContentHeader(ps.Streams);
+					responseContent.Headers.SetContentHeader(ps.Streams);
 
-				return new HttpResponseMessage(string.IsNullOrEmpty(stringResult) ? HttpStatusCode.NoContent : HttpStatusCode.OK) { Content = responseContent };
+					return new HttpResponseMessage(string.IsNullOrEmpty(stringResult) ? HttpStatusCode.NoContent : HttpStatusCode.OK) { Content = responseContent };
+				}
+				catch (CommandNotFoundException)
+				{
+					return new HttpResponseMessage(HttpStatusCode.NotFound);
+				}
 			}
 		}
 
@@ -144,10 +151,17 @@ namespace DataBooster.PSWebApi
 			if (errors != null && errors.Count > 0)
 			{
 				if (errors.Count == 1)
-					throw errors[0].Exception;
+					throw RestoreCommandNotFoundException(errors[0]);
 				else
-					throw new AggregateException(string.Join(Environment.NewLine, errors.Select(e => e.Exception.Message)),
-						errors.Select(e => e.Exception));
+				{
+					List<Exception> innerExceptions = errors.Select(e => RestoreCommandNotFoundException(e)).ToList();
+					CommandNotFoundException notFoundException = innerExceptions.OfType<CommandNotFoundException>().FirstOrDefault();
+
+					if (notFoundException != null)
+						throw notFoundException;
+					else
+						throw new AggregateException(string.Join(Environment.NewLine, errors.Select(e => e.Exception.Message)), innerExceptions);
+				}
 			}
 
 			if (ps.HadErrors)
@@ -155,6 +169,16 @@ namespace DataBooster.PSWebApi
 				cancellationToken.ThrowIfCancellationRequested();	//	PipelineStoppedException();
 				throw new InvalidPowerShellStateException();
 			}
+		}
+
+		private static Exception RestoreCommandNotFoundException(ErrorRecord errorRecord)
+		{
+			var wrapperException = errorRecord.Exception;
+
+			if (wrapperException is ParentContainsErrorRecordException && errorRecord.FullyQualifiedErrorId.Equals("CommandNotFoundException", StringComparison.Ordinal))
+				return new CommandNotFoundException(wrapperException.Message, wrapperException.InnerException);
+			else
+				return wrapperException;
 		}
 
 		private static void SetContentHeader(this HttpContentHeaders headers, PSDataStreams invokedStatus)

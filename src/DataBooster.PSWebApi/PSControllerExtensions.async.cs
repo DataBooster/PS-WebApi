@@ -11,6 +11,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Collections.Generic;
 using System.Management.Automation;
+using System.ComponentModel;
 
 namespace DataBooster.PSWebApi
 {
@@ -42,15 +43,22 @@ namespace DataBooster.PSWebApi
 				if (!string.IsNullOrWhiteSpace(converter.ConversionCmdlet))
 					ps.AddCommand(converter.ConversionCmdlet, true).Commands.AddParameters(converter.CmdletParameters);
 
-				string stringResult = GetPsResult(await ps.InvokeAsync(cancellationToken).ConfigureAwait(false), encoding);
+				try
+				{
+					string stringResult = GetPsResult(await ps.InvokeAsync(cancellationToken).ConfigureAwait(false), encoding);
 
-				ps.CheckErrors(cancellationToken);
+					ps.CheckErrors(cancellationToken);
 
-				StringContent responseContent = new StringContent(stringResult, encoding, contentNegotiator.NegotiatedMediaType.MediaType);
+					StringContent responseContent = new StringContent(stringResult, encoding, contentNegotiator.NegotiatedMediaType.MediaType);
 
-				responseContent.Headers.SetContentHeader(ps.Streams);
+					responseContent.Headers.SetContentHeader(ps.Streams);
 
-				return new HttpResponseMessage(string.IsNullOrEmpty(stringResult) ? HttpStatusCode.NoContent : HttpStatusCode.OK) { Content = responseContent };
+					return new HttpResponseMessage(string.IsNullOrEmpty(stringResult) ? HttpStatusCode.NoContent : HttpStatusCode.OK) { Content = responseContent };
+				}
+				catch (CommandNotFoundException)
+				{
+					return new HttpResponseMessage(HttpStatusCode.NotFound);
+				}
 			}
 		}
 
@@ -91,22 +99,36 @@ namespace DataBooster.PSWebApi
 
 			using (CmdProcess cmd = new CmdProcess(scriptPath, arguments) { OutputEncoding = encoding })
 			{
-				int exitCode = await cmd.ExecuteAsync(cancellationToken).ConfigureAwait(false);
-				string responseString = cmd.GetStandardError();
-				HttpStatusCode httpStatusCode;
-
-				if (exitCode == 0 && string.IsNullOrEmpty(responseString))
+				try
 				{
-					responseString = cmd.GetStandardOutput();
-					httpStatusCode = string.IsNullOrEmpty(responseString) ? HttpStatusCode.NoContent : HttpStatusCode.OK;
+					int exitCode = await cmd.ExecuteAsync(cancellationToken).ConfigureAwait(false);
+					string responseString = cmd.GetStandardError();
+					HttpStatusCode httpStatusCode;
+
+					if (exitCode == 0 && string.IsNullOrEmpty(responseString))
+					{
+						responseString = cmd.GetStandardOutput();
+						httpStatusCode = string.IsNullOrEmpty(responseString) ? HttpStatusCode.NoContent : HttpStatusCode.OK;
+					}
+					else
+						httpStatusCode = HttpStatusCode.InternalServerError;
+
+					StringContent responseContent = new StringContent(responseString, encoding, contentNegotiator.NegotiatedMediaType.MediaType);
+					responseContent.Headers.Add("Exit-Code", exitCode.ToString());
+
+					return new HttpResponseMessage(httpStatusCode) { Content = responseContent };
 				}
-				else
-					httpStatusCode = HttpStatusCode.InternalServerError;
-
-				StringContent responseContent = new StringContent(responseString, encoding, contentNegotiator.NegotiatedMediaType.MediaType);
-				responseContent.Headers.Add("Exit-Code", exitCode.ToString());
-
-				return new HttpResponseMessage(httpStatusCode) { Content = responseContent };
+				catch (Win32Exception e)
+				{
+					switch (e.NativeErrorCode)
+					{
+						case 2:		// ERROR_FILE_NOT_FOUND
+						case 267:	// ERROR_DIRECTORY
+							return new HttpResponseMessage(HttpStatusCode.NotFound);
+						default:
+							throw;
+					}
+				}
 			}
 		}
 

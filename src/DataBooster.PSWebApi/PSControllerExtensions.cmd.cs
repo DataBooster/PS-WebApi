@@ -8,6 +8,7 @@ using System.Net.Http;
 using System.Web.Http;
 using System.Threading;
 using System.Collections.Generic;
+using System.ComponentModel;
 using Newtonsoft.Json.Linq;
 
 namespace DataBooster.PSWebApi
@@ -68,22 +69,36 @@ namespace DataBooster.PSWebApi
 
 			using (CmdProcess cmd = new CmdProcess(scriptPath, arguments) { OutputEncoding = encoding })
 			{
-				int exitCode = cmd.Execute(timeoutSeconds);
-				string responseString = cmd.GetStandardError();
-				HttpStatusCode httpStatusCode;
-
-				if (exitCode == 0 && string.IsNullOrEmpty(responseString))
+				try
 				{
-					responseString = cmd.GetStandardOutput();
-					httpStatusCode = string.IsNullOrEmpty(responseString) ? HttpStatusCode.NoContent : HttpStatusCode.OK;
+					int exitCode = cmd.Execute(timeoutSeconds);
+					string responseString = cmd.GetStandardError();
+					HttpStatusCode httpStatusCode;
+
+					if (exitCode == 0 && string.IsNullOrEmpty(responseString))
+					{
+						responseString = cmd.GetStandardOutput();
+						httpStatusCode = string.IsNullOrEmpty(responseString) ? HttpStatusCode.NoContent : HttpStatusCode.OK;
+					}
+					else
+						httpStatusCode = HttpStatusCode.InternalServerError;
+
+					StringContent responseContent = new StringContent(responseString, encoding, contentNegotiator.NegotiatedMediaType.MediaType);
+					responseContent.Headers.Add("Exit-Code", exitCode.ToString());
+
+					return new HttpResponseMessage(httpStatusCode) { Content = responseContent };
 				}
-				else
-					httpStatusCode = HttpStatusCode.InternalServerError;
-
-				StringContent responseContent = new StringContent(responseString, encoding, contentNegotiator.NegotiatedMediaType.MediaType);
-				responseContent.Headers.Add("Exit-Code", exitCode.ToString());
-
-				return new HttpResponseMessage(httpStatusCode) { Content = responseContent };
+				catch (Win32Exception e)
+				{
+					switch (e.NativeErrorCode)
+					{
+						case 2:		// ERROR_FILE_NOT_FOUND
+						case 267:	// ERROR_DIRECTORY
+							return new HttpResponseMessage(HttpStatusCode.NotFound);
+						default:
+							throw;
+					}
+				}
 			}
 		}
 	}
