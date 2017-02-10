@@ -1,11 +1,11 @@
 # PS-WebApi
--- -- -- -- -- -- -- -- -- -- -- -- Let PowerShell Script serve as WebAPI.
+-- -- -- -- -- -- -- -- -- -- -- -- Let PowerShell Script or command-line process serve as WebAPI.
 
 PSWebApi is a simple library for building ASP.NET Web APIs (RESTful Services) by PowerShell Scripts or batch/executable files out of the box.
 
 ## Overview
 
-Similar to the sister repository [DbWebApi](https://github.com/DataBooster/DbWebApi), any managed http client can invoke PowerShell scripts, batch files and executables through the PS-WebApi as the following,
+Similar to the sister repository [DbWebApi](https://github.com/DataBooster/DbWebApi), any http client can invoke **managed** PowerShell scripts, batch files and command-line executables through the PS-WebApi as the following,
 
 **PowerShell**:
 - `http://base-uri`/**ps.json**/*ps-scripts/test-args.ps1?p1=1&=arg...*  
