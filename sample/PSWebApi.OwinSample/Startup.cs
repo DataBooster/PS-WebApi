@@ -10,7 +10,9 @@ namespace PSWebApi.OwinSample
 {
 	public class Startup
 	{
-		public void Configuration(IAppBuilder app)
+		private static HttpServer _httpServer;
+
+		static Startup()
 		{
 			HttpConfiguration config = new HttpConfiguration();
 
@@ -49,10 +51,15 @@ namespace PSWebApi.OwinSample
 #if DEBUG
 			config.IncludeErrorDetailPolicy = IncludeErrorDetailPolicy.Always;
 #endif
-			app.UseWebApi(config);
+			_httpServer = new HttpServer(config);
 		}
 
-		private void EnableCors(HttpConfiguration config)
+		public void Configuration(IAppBuilder app)
+		{
+			app.UseWebApi(_httpServer);
+		}
+
+		private static void EnableCors(HttpConfiguration config)
 		{
 			if (!string.IsNullOrEmpty(ConfigHelper.CorsOrigins))
 			{
