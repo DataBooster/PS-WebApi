@@ -1,7 +1,7 @@
 # PS-WebApi
--- -- -- -- -- -- -- -- -- -- -- -- Let PowerShell Script or command-line process serve as WebAPI.
+-- -- -- -- -- -- -- -- -- -- -- -- Let any PowerShell Script or command-line process serve as WebAPI.
 
-PSWebApi is a simple library for building ASP.NET Web APIs (RESTful Services) by PowerShell Scripts or batch/executable files out of the box.
+PSWebApi is a simple library for turning PowerShell Scripts or batch/executable files into ASP.NET Web APIs (RESTful Services) out of the box.
 
 ## Overview
 
@@ -33,13 +33,23 @@ Often times, in some intranet applications, some functional requirements can be 
 
 The PS-WebApi is coming out for the seamless integration between script-based modules and other modules in the network. So, Scripting Guys! Do not feel lonely anymore. Make good use of scripting, can reduce the complexity of the whole system development and reduce the developing effort significantly.
 
-## Service Setup
+## Server Setup
 
 [PSWebApi.OwinSample](https://github.com/DataBooster/PS-WebApi/tree/master/sample/PSWebApi.OwinSample) is a Quick Start Example, it can be used as a scaffold for customizing your own PS-WebApi service.
 
 The main controller [PSWebApiController](https://github.com/DataBooster/PS-WebApi/blob/master/sample/PSWebApi.OwinSample/Controllers/PSWebApiController.cs) shows how to use the two main extension methods `this.InvokePowerShell(script.LocalFullPath(), allParameters)` and `this.InvokeCmd(script.LocalFullPath(), allArguments, ConfigHelper.CmdTimeoutSeconds)` brought from nugget package https://www.nuget.org/packages/DataBooster.PSWebApi. You can leave this controller as it is if no need to enhance at present.
 
-An important thing needs to be done by yourself is authorization, please don't forget to plug in your own enterprise's permission check implementation in [CustomAuthorizeAttribute.cs](https://github.com/DataBooster/PS-WebApi/blob/master/sample/PSWebApi.OwinSample/CustomAuthorizeAttribute.cs):
+The only one configuration item that must be customized is the **ScriptRoot** in the [Web.config](https://github.com/DataBooster/PS-WebApi/blob/master/sample/PSWebApi.OwinSample/Web.config). The **ScriptRoot** item is used to indicate a physical location for hosting all the PowerShell Scripts and batch/executable files, those files can be organized under any deep subdirectories. For example,
+``` XML
+<configuration>
+  <appSettings>
+    <add key="ScriptRoot" value="D:\user-script-root\" />
+  </appSettings>
+</configuration>
+```
+Then, any command-line program _(main entry is .exe, .bat or .ps1)_ been copied into (under) the **ScriptRoot** directory (`D:\user-script-root\`) becomes Web API _(RESTful service)_ out of the box. The request URL should be `http://base-uri/.../relative_path_from_ScriptRoot` _(Note that all back-slashes `\` in physical path need to be replaced by forward-slashes `/` in the URL, and the `...` part depends on your URL routing policy defined in [Startup.cs](https://github.com/DataBooster/PS-WebApi/blob/master/sample/PSWebApi.OwinSample/Startup.cs))_.
+
+You should have an enterprise authorization (access control) service to be integrated with the PS-WebApi service in your organization. The join-point is reserved in [CustomAuthorizeAttribute.cs](https://github.com/DataBooster/PS-WebApi/blob/master/sample/PSWebApi.OwinSample/CustomAuthorizeAttribute.cs):
 ``` CSharp
     public partial class CustomAuthorizeAttribute : AuthorizeAttribute
     {
@@ -54,20 +64,15 @@ An important thing needs to be done by yourself is authorization, please don't f
         }
     }
 ```
-The only one configuration item that must be customized is the **ScriptRoot** in the [Web.config](https://github.com/DataBooster/PS-WebApi/blob/master/sample/PSWebApi.OwinSample/Web.config). The **ScriptRoot** item is used to indicate a physical location for hosting all the PowerShell Scripts and batch/executable files, those files can be organized under any deep subdirectories. For example,
-``` XML
-<configuration>
-  <appSettings>
-    <add key="ScriptRoot" value="D:\scripts-root\" />
-  </appSettings>
-</configuration>
-```
+`CheckPrivilege(string script, string user)`:
+- `script` parameter will receive above `relative_path_from_ScriptRoot`;
+- `user` parameter will be the authenticated user name of current HTTP client.
 
 ## HTTP Client
 #### Request-URI
 
-If there is a PowerShell script "D:\scripts-root\Dept1\ps\test\demo1.ps1", the HTTP client should call it by URL like `http://base-uri/ps.json`/__Dept1/ps/test/demo1.ps1__?p1=1&=arg....  
-If there is a batch file "D:\scripts-root\Dept1\bat\test\demo2.bat", the HTTP client should call it by URL like `http://base-uri/cmd`/__Dept1/bat/test/demo2.bat__?=1&=arg....  
+If there is a PowerShell script "D:\user-script-root\Dept1\ps\test\demo1.ps1", the HTTP client should call it by URL like `http://base-uri/ps.json`/__Dept1/ps/test/demo1.ps1__?p1=1&=arg....  
+If there is a batch file "D:\user-script-root\Dept1\bat\test\demo2.bat", the HTTP client should call it by URL like `http://base-uri/cmd`/__Dept1/bat/test/demo2.bat__?=1&=arg....  
 Calling executable file follows the same pattern as batch file.
 
 #### Response MediaType
@@ -118,15 +123,15 @@ If both request body and query-string are supplied, the query-string parts (para
     All the name/value pairs in query-string are passed to PowerShell. Empty name and duplicate names are acceptable in query-string. Empty-named parameters will be converted to arguments. For the following Uri example:
 
     ```
-test-args.ps1?np1=0.618&np1=2.71828&=arg1...&=arg2...
+    test-args.ps1?np1=0.618&np1=2.71828&=arg1...&=arg2...
     ```
     **==>**
     ```
-test-args.ps1 `
--np1 "0.618" `
--np1 "2.71828" `
-"arg1..." `
-"arg2..."
+    test-args.ps1 `
+    -np1 "0.618" `
+    -np1 "2.71828" `
+    "arg1..." `
+    "arg2..."
     ```
     *Get through Uri query-string, all the values are always string type.*
 
@@ -139,24 +144,24 @@ To have multiple arguments, please use different number of white-space as the ke
 
     For the following JSON example:
     ``` JSON
-{
-    "named_param1": 3.14,
-    "": "This is an argument (unnamed-parameter)",
-    "np2": "Value 1 of 3",
-    "np2 ": "Value 2 of 3",
-    " np2 ": "Value 3 of 3",
-    " ": " This is another argument "
-}
+    {
+        "named_param1": 3.14,
+        "": "This is an argument (unnamed-parameter)",
+        "np2": "Value 1 of 3",
+        "np2 ": "Value 2 of 3",
+        " np2 ": "Value 3 of 3",
+        " ": " This is another argument "
+    }
     ```
     **==>**
     ```
-test-args.ps1 `
--named_param1 3.14 `
-"This is an argument (unnamed-parameter)" `
--np2 "Value 1 of 3" `
--np2 "Value 2 of 3" `
--np2 "Value 3 of 3" `
-" This is another argument "
+    test-args.ps1 `
+    -named_param1 3.14 `
+    "This is an argument (unnamed-parameter)" `
+    -np2 "Value 1 of 3" `
+    -np2 "Value 2 of 3" `
+    -np2 "Value 3 of 3" `
+    " This is another argument "
     ```
 
 ##### Batch/Executable
@@ -175,17 +180,17 @@ Three kinds of JSON data can be accepted as command line arguments. Each request
 Similar to URI query-string, JSON Object is an unordered set of name/value pairs. Each name/value pair basically will be split into two arguments. All leading and trailing white-space will be trimmed from the name. If the name becomes empty, it won't be added into the command line as an argument. But the value part won't be trimmed. Any type other than string will be converted into a string by **ToString()** method *(null value will become an empty string "")*. A null value will be discarded only when its name is null, empty or white-space.  
 For Example,
     ``` JSON
-{
-    "/n1": 3.14,
-    "-n2": "Value 1 of 2",
-    "-n2 ": "Value2of2",
-    " ": null,
-    "": " This is the last argument "
-}
+    {
+        "/n1": 3.14,
+        "-n2": "Value 1 of 2",
+        "-n2 ": "Value2of2",
+        " ": null,
+        "": " This is the last argument "
+    }
     ```
     **==>**
     ```
-test-args.bat /n1 3.14 -n2 "Value 1 of 3" -n2 Value2of3 " This is the last argument "
+    test-args.bat /n1 3.14 -n2 "Value 1 of 3" -n2 Value2of3 " This is the last argument "
     ```
 
     - JSON Array  
@@ -193,19 +198,19 @@ Using a JSON Array is most straightforward way, each item in the array will be p
 
     For example,
     ``` JSON
-[
-    "/n1",
-    3.14,
-    "-n2",
-    "Value 1 of 3",
-    "-n2",
-    "Value2of3",
-    " This is the last argument "
-]
+    [
+        "/n1",
+        3.14,
+        "-n2",
+        "Value 1 of 3",
+        "-n2",
+        "Value2of3",
+        " This is the last argument "
+    ]
     ```
     ==>
     ```
-test-args.bat /n1 3.14 -n2 "Value 1 of 3" -n2 Value2of3 " This is the last argument "
+    test-args.bat /n1 3.14 -n2 "Value 1 of 3" -n2 Value2of3 " This is the last argument "
     ```
 
     - Single JSON Value  
@@ -213,17 +218,17 @@ When there is only one item (single value) in the array, the single JSON value c
 
     For example,
     ``` JSON
-"single value argument"
+    "single value argument"
     ```
     *is equivalent to*
     ``` JSON
-[
-    "single value argument"
-]
+    [
+        "single value argument"
+    ]
     ```
     both ==>
     ```
-test-args.bat "single value argument"
+    test-args.bat "single value argument"
     ```
 
 - ***Escaping and Quoting***  
@@ -242,7 +247,7 @@ For examples,
     will be encoded/escaped as  
     `"She's 5'5\" tall."`
 
-        A test batch [test-args.exe](https://github.com/DataBooster/PS-WebApi/tree/master/sample/Test-Args) *(build release mode to `..\PSWebApi.OwinSample\scripts-root\exe-apps\`)* can be used to give it a try.
+        A test batch [test-args.exe](https://github.com/DataBooster/PS-WebApi/tree/master/sample/Test-Args) *(build release mode to `..\PSWebApi.OwinSample\user-script-root\exe-apps\`)* can be used to give it a try.
 
     - CmdArgumentsBuilder.**QuoteBatArgument**  
 For batch files:

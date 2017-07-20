@@ -11,7 +11,7 @@
 		<requireLicenseAcceptance>false</requireLicenseAcceptance>
 		<description>$description$</description>
 		<releaseNotes>https://github.com/DataBooster/PS-WebApi/releases</releaseNotes>
-		<copyright>Copyright 2016 Abel Cheng</copyright>
+		<copyright>Copyright 2016-2017 Abel Cheng</copyright>
 		<tags>PowerShell ASP.NET Web API JSON XML CSV Text HTML REST APIs CommandLine CMD Batch bat exe ps1</tags>
 	</metadata>
 </package>
