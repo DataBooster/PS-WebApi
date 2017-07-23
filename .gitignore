@@ -250,4 +250,4 @@ paket-files/
 # JetBrains Rider
 .idea/
 *.sln.iml
-sample/PSWebApi.OwinSample/scripts-root/exe-apps/Test-Args.exe.config
+sample/PSWebApi.OwinSample/user-script-root/exe-apps/Test-Args.exe.config
