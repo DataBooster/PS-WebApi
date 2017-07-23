@@ -179,57 +179,57 @@ Three kinds of JSON data can be accepted as command line arguments. Each request
     - JSON Object *(`Dictionary<string,object>`)*  
 Similar to URI query-string, JSON Object is an unordered set of name/value pairs. Each name/value pair basically will be split into two arguments. All leading and trailing white-space will be trimmed from the name. If the name becomes empty, it won't be added into the command line as an argument. But the value part won't be trimmed. Any type other than string will be converted into a string by **ToString()** method *(null value will become an empty string "")*. A null value will be discarded only when its name is null, empty or white-space.  
 For Example,
-    ``` JSON
-    {
-        "/n1": 3.14,
-        "-n2": "Value 1 of 2",
-        "-n2 ": "Value2of2",
-        " ": null,
-        "": " This is the last argument "
-    }
-    ```
-    **==>**
-    ```
-    test-args.bat /n1 3.14 -n2 "Value 1 of 3" -n2 Value2of3 " This is the last argument "
-    ```
+        ``` JSON
+        {
+            "/n1": 3.14,
+            "-n2": "Value 1 of 2",
+            "-n2 ": "Value2of2",
+            " ": null,
+            "": " This is the last argument "
+        }
+        ```
+        **==>**
+        ```
+        test-args.bat /n1 3.14 -n2 "Value 1 of 3" -n2 Value2of3 " This is the last argument "
+        ```
 
     - JSON Array  
 Using a JSON Array is most straightforward way, each item in the array will be passed to command line as arguments (no trim); null value will become an empty string "" (enclosed by double quotes).
 
-    For example,
-    ``` JSON
-    [
-        "/n1",
-        3.14,
-        "-n2",
-        "Value 1 of 3",
-        "-n2",
-        "Value2of3",
-        " This is the last argument "
-    ]
-    ```
-    ==>
-    ```
-    test-args.bat /n1 3.14 -n2 "Value 1 of 3" -n2 Value2of3 " This is the last argument "
-    ```
+        For example,
+        ``` JSON
+        [
+            "/n1",
+            3.14,
+            "-n2",
+            "Value 1 of 3",
+            "-n2",
+            "Value2of3",
+            " This is the last argument "
+        ]
+        ```
+        ==>
+        ```
+        test-args.bat /n1 3.14 -n2 "Value 1 of 3" -n2 Value2of3 " This is the last argument "
+        ```
 
     - Single JSON Value  
 When there is only one item (single value) in the array, the single JSON value can be put in the body directly, rather than wrapped in an array *(surrounded by square brackets)*.
 
-    For example,
-    ``` JSON
-    "single value argument"
-    ```
-    *is equivalent to*
-    ``` JSON
-    [
+        For example,
+        ``` JSON
         "single value argument"
-    ]
-    ```
-    both ==>
-    ```
-    test-args.bat "single value argument"
-    ```
+        ```
+        *is equivalent to*
+        ``` JSON
+        [
+            "single value argument"
+        ]
+        ```
+        both ==>
+        ```
+        test-args.bat "single value argument"
+        ```
 
 - ***Escaping and Quoting***  
 Since there is no unified standard to escape and quote a Windows command line argument, it needs to be fully controlled by your own customized PSWebApi service *(please see a reference implementation [CmdArgumentResolver.cs](https://github.com/DataBooster/PS-WebApi/blob/master/sample/PSWebApi.OwinSample/CmdArgumentResolver.cs) in the sample project)*. The PSWebApi library only offers two common methods for escaping and quoting:
