@@ -48,9 +48,9 @@ namespace PSWebApi.OwinSample
 				routeTemplate: "api/{controller}/{action}"
 			);
 
-#if DEBUG
+//#if DEBUG
 			config.IncludeErrorDetailPolicy = IncludeErrorDetailPolicy.Always;
-#endif
+//#endif
 			_httpServer = new HttpServer(config);
 		}
 
