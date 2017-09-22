@@ -28,8 +28,13 @@ namespace DataBooster.PSWebApi
 
 		static PSControllerExtensions()
 		{
-			_runspacePool = RunspaceFactory.CreateRunspacePool();
+			int maxWorkerThreads, maxIOThreads;
+
+			ThreadPool.GetMaxThreads(out maxWorkerThreads, out maxIOThreads);
+
+			_runspacePool = RunspaceFactory.CreateRunspacePool(1, maxWorkerThreads);
 			_runspacePool.Open();
+
 			_escapedNewLine = Uri.EscapeDataString(Environment.NewLine).ToLower();
 		}
 
