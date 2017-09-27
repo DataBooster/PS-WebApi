@@ -35,12 +35,15 @@ namespace DataBooster.PSWebApi
 		private readonly ManualResetEventSlim _waitStandardOutput, _waitStandardError;
 		private readonly WaitHandle[] _waitRedirectionHandles;
 
+		private readonly string _redirectStandardInput;
+
 		/// <summary>
 		/// Initializes a new instance of the CmdProcess class with the name of an application and a set of command-line arguments.
 		/// </summary>
 		/// <param name="filePath">The path of an application file to run in the process.</param>
 		/// <param name="arguments">Command-line arguments to pass when starting the process.</param>
-		public CmdProcess(string filePath, string arguments = null)
+		/// <param name="redirectStandardInput">Specifies a complete text to redirect to the StandardInput stream of process, or defaults null to indicate NOT REDIRECTED.</param>
+		public CmdProcess(string filePath, string arguments = null, string redirectStandardInput = null)
 		{
 			if (filePath != null)
 				filePath = filePath.Trim();
@@ -58,6 +61,10 @@ namespace DataBooster.PSWebApi
 			_waitStandardOutput = new ManualResetEventSlim(false);
 			_waitStandardError = new ManualResetEventSlim(false);
 			_waitRedirectionHandles = new WaitHandle[] { _waitStandardOutput.WaitHandle, _waitStandardError.WaitHandle };
+
+			_redirectStandardInput = redirectStandardInput;
+			if (_redirectStandardInput != null)
+				_processStartInfo.RedirectStandardInput = true;
 
 			_process = new Process() { StartInfo = _processStartInfo };
 			_started = _disposed = _canceled = false;
@@ -78,6 +85,23 @@ namespace DataBooster.PSWebApi
 				};
 		}
 
+		private void StartProcess()
+		{
+			_process.Start();
+			_started = true;
+
+			_process.BeginOutputReadLine();
+			_process.BeginErrorReadLine();
+
+			if (_processStartInfo.RedirectStandardInput)
+			{
+				using (StreamWriter writer = _process.StandardInput)
+				{
+					writer.WriteLine(_redirectStandardInput);
+				}
+			}
+		}
+
 		/// <summary>
 		/// Synchronously starts the associated process and makes the current thread wait until the associated process terminates or times out.
 		/// Please note that every instance of this class can be executed only once.
@@ -89,10 +113,7 @@ namespace DataBooster.PSWebApi
 			if (_started)
 				throw new InvalidOperationException();
 
-			_process.Start();
-			_started = true;
-			_process.BeginOutputReadLine();
-			_process.BeginErrorReadLine();
+			StartProcess();
 
 			int millisecondsTimeout = (timeoutSeconds == Timeout.Infinite) ? Timeout.Infinite : timeoutSeconds * 1000;
 
@@ -149,12 +170,7 @@ namespace DataBooster.PSWebApi
 				if (_canceled)
 					_workingTaskCompletionSource.TrySetCanceled(/*cancellationToken*/);
 				else
-				{
-					_process.Start();
-					_started = true;
-					_process.BeginOutputReadLine();
-					_process.BeginErrorReadLine();
-				}
+					StartProcess();
 			}
 
 			return _workingTaskCompletionSource.Task;
