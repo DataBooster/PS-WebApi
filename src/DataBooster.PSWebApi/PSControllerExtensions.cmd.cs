@@ -60,14 +60,15 @@ namespace DataBooster.PSWebApi
 		/// <param name="apiController">The ApiController. This is an extension method to ApiController, when you use instance method syntax to call this method, omit this parameter.</param>
 		/// <param name="scriptPath">The fully qualified location of an application file (batch file or executable file) to be executed.</param>
 		/// <param name="arguments">Command-line arguments to pass when starting the process.</param>
+		/// <param name="redirectStandardInput">Specifies a complete text to redirect to the StandardInput stream of process, or defaults null to indicate NOT REDIRECTED.</param>
 		/// <param name="timeoutSeconds">The time in seconds to wait for the command to execute before terminating the attempt to execute a command and generating an error.</param>
 		/// <returns>A complete HttpResponseMessage contains the standard output (stdout) if the application runs successfully, Otherwise, the standard error (stderr).</returns>
-		public static HttpResponseMessage InvokeCmd(this ApiController apiController, string scriptPath, string arguments, int timeoutSeconds = Timeout.Infinite)
+		public static HttpResponseMessage InvokeCmd(this ApiController apiController, string scriptPath, string arguments, string redirectStandardInput = null, int timeoutSeconds = Timeout.Infinite)
 		{
 			PSContentNegotiator contentNegotiator = new PSContentNegotiator(apiController.Request);
 			Encoding encoding = contentNegotiator.NegotiatedEncoding;
 
-			using (CmdProcess cmd = new CmdProcess(scriptPath, arguments) { OutputEncoding = encoding })
+			using (CmdProcess cmd = new CmdProcess(scriptPath, arguments, redirectStandardInput) { OutputEncoding = encoding })
 			{
 				try
 				{
