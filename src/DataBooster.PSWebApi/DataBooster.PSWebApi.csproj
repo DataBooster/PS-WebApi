@@ -75,6 +75,7 @@
     <Compile Include="PSControllerExtensions.async.cs" />
     <Compile Include="PSControllerExtensions.cmd.cs" />
     <Compile Include="PSControllerExtensions.cs" />
+    <Compile Include="PSControllerExtensions.register.cs" />
     <Compile Include="PSConverterRegistry.cs" />
     <Compile Include="PSMediaTypeFormatter.cs" />
     <Compile Include="ScriptPath.cs" />

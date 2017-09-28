@@ -22,7 +22,7 @@ namespace DataBooster.PSWebApi
 		/// <summary>
 		/// Initializes a new instance of the <see cref="CmdMediaTypeFormatter"/> class.
 		/// </summary>
-		/// <param name="mediaTypes">A list supported MediaTypes.</param>
+		/// <param name="mediaTypes">A list of supported request Content-Types for redirecting StandardInput.</param>
 		public CmdMediaTypeFormatter(IEnumerable<MediaTypeHeaderValue> mediaTypes = null)
 		{
 			if (mediaTypes == null)
@@ -93,18 +93,6 @@ namespace DataBooster.PSWebApi
 				return JsonConvert.DeserializeObject<Dictionary<string, object>>(bodyText);
 
 			return null;
-		}
-
-		/// <summary>
-		/// Distinguishes RedirectStandardInput text from the request body.
-		/// </summary>
-		/// <param name="rawBody">Raw JToken of the request body.</param>
-		/// <returns>The text of request body if the Content-Type indicate RedirectStandardInput; Otherwise null - means that the body carried command line arguments.</returns>
-		public static string DistinguishStandardInput(JToken rawBody)
-		{
-			JRaw stdin = rawBody as JRaw;
-
-			return (stdin == null) ? null : stdin.Value as string;
 		}
 	}
 }
