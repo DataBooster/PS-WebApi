@@ -133,6 +133,19 @@ namespace DataBooster.PSWebApi
 			}
 		}
 
+		/// <summary>
+		/// Asynchronously invokes a Windows batch file or executable file by using a set of command-line arguments.
+		/// </summary>
+		/// <param name="apiController">The ApiController. This is an extension method to ApiController, when you use instance method syntax to call this method, omit this parameter.</param>
+		/// <param name="scriptPath">The fully qualified location of an application file (batch file or executable file) to be executed.</param>
+		/// <param name="arguments">Command-line arguments to pass when starting the process.</param>
+		/// <param name="cancellationToken">The cancellation token can be used to request that the operation be abandoned before completing the execution. Exceptions will be reported via the returned Task object.</param>
+		/// <returns>A task representing the asynchronous operation.</returns>
+		public static Task<HttpResponseMessage> InvokeCmdAsync(this ApiController apiController, string scriptPath, string arguments, CancellationToken cancellationToken)
+		{
+			return InvokeCmdAsync(apiController, scriptPath, arguments, null, cancellationToken);
+		}
+
 		internal static Task<TResult> AsCanceledTask<TResult>(this CancellationToken cancellationToken, TaskCompletionSource<TResult> taskCompletionSource = null)
 		{
 			if (!cancellationToken.IsCancellationRequested)

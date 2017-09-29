@@ -14,44 +14,42 @@ namespace PSWebApi.OwinSample
 
 		static Startup()
 		{
-			HttpConfiguration config = new HttpConfiguration();
+			HttpConfiguration httpConfig = new HttpConfiguration();
+			PSConfiguration psConfig = httpConfig.RegisterPsWebApi();
 
-			PSMediaTypeFormatter psMediaTypeFormatter = new PSMediaTypeFormatter();
-			config.Formatters.Insert(0, psMediaTypeFormatter);
+			EnableCors(httpConfig);
+			httpConfig.MapHttpAttributeRoutes();
 
-			EnableCors(config);
-			config.MapHttpAttributeRoutes();
-
-			config.Routes.MapHttpRoute(
+			httpConfig.Routes.MapHttpRoute(
 				name: "PSWebApi",
 				routeTemplate: "ps/{*script}",
 				defaults: new { controller = "PSWebApi", action = "InvokePS_Async" },
 				constraints: new { script = @".+\.ps1$" }
 			);
 
-			config.Routes.MapHttpRoute(
+			httpConfig.Routes.MapHttpRoute(
 				name: "PSWebApi-Ext",
 				routeTemplate: "ps.{ext}/{*script}",
 				defaults: new { controller = "PSWebApi", action = "InvokePS_Async" },
-				constraints: new { script = @".+\.ps1$", ext = psMediaTypeFormatter.Configuration.UriPathExtConstraint() }
+				constraints: new { script = @".+\.ps1$", ext = psConfig.UriPathExtConstraint() }
 			);
 
-			config.Routes.MapHttpRoute(
+			httpConfig.Routes.MapHttpRoute(
 				name: "CmdWebApi",
 				routeTemplate: "cmd/{*script}",
 				defaults: new { controller = "PSWebApi", action = "InvokeCMD_Async", ext = "string" },
 				constraints: new { script = @".+\.(bat|exe)$" }
 			);
 
-			config.Routes.MapHttpRoute(
+			httpConfig.Routes.MapHttpRoute(
 				name: "MiscApi",
 				routeTemplate: "api/{controller}/{action}"
 			);
 
-//#if DEBUG
-			config.IncludeErrorDetailPolicy = IncludeErrorDetailPolicy.Always;
-//#endif
-			_httpServer = new HttpServer(config);
+			//#if DEBUG
+			httpConfig.IncludeErrorDetailPolicy = IncludeErrorDetailPolicy.Always;
+			//#endif
+			_httpServer = new HttpServer(httpConfig);
 		}
 
 		public void Configuration(IAppBuilder app)

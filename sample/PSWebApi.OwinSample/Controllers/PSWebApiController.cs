@@ -33,9 +33,10 @@ namespace PSWebApi.OwinSample.Controllers
 		{
 			string physicalFullPath = script.LocalFullPath();
 			CmdArgumentResolver argResolver = new CmdArgumentResolver(Path.GetExtension(physicalFullPath));
-			string allArguments = argResolver.GatherInputArguments(this.Request, argumentsFromBody, ConfigHelper.CmdForceArgumentQuote);
+			string redirectStandardInput = argumentsFromBody.DistinguishStandardInput();
+			string allArguments = argResolver.GatherInputArguments(this.Request, (redirectStandardInput == null) ? argumentsFromBody : null, ConfigHelper.CmdForceArgumentQuote);
 
-			return this.InvokeCmd(physicalFullPath, allArguments, ConfigHelper.CmdTimeoutSeconds);
+			return this.InvokeCmd(physicalFullPath, allArguments, redirectStandardInput, ConfigHelper.CmdTimeoutSeconds);
 		}
 
 		[AcceptVerbs("GET", "POST", "PUT", "DELETE")]
@@ -43,9 +44,10 @@ namespace PSWebApi.OwinSample.Controllers
 		{
 			string physicalFullPath = script.LocalFullPath();
 			CmdArgumentResolver argResolver = new CmdArgumentResolver(Path.GetExtension(physicalFullPath));
-			string allArguments = argResolver.GatherInputArguments(this.Request, argumentsFromBody, ConfigHelper.CmdForceArgumentQuote);
+			string redirectStandardInput = argumentsFromBody.DistinguishStandardInput();
+			string allArguments = argResolver.GatherInputArguments(this.Request, (redirectStandardInput == null) ? argumentsFromBody : null, ConfigHelper.CmdForceArgumentQuote);
 
-			return this.InvokeCmdAsync(physicalFullPath, allArguments, cancellationToken);
+			return this.InvokeCmdAsync(physicalFullPath, allArguments, redirectStandardInput, cancellationToken);
 		}
 	}
 }

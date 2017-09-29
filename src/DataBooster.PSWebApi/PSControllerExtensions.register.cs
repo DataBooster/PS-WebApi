@@ -19,15 +19,18 @@ namespace DataBooster.PSWebApi
 		/// <param name="config">The <see cref="HttpConfiguration"/>.  This is an extension method to HttpConfiguration, when you use instance method syntax to call this method, omit this parameter.</param>
 		/// <param name="psConfiguration">The configuration for initializing a instance PSMediaTypeFormatter, which contains all currently supported PSConverterRegistry add-ins.</param>
 		/// <param name="mediaTypes">A list of supported request Content-Types for redirecting StandardInput.</param>
-		public static void RegisterPsWebApi(this HttpConfiguration config, PSConfiguration psConfiguration = null, IEnumerable<MediaTypeHeaderValue> mediaTypes = null)
+		public static PSConfiguration RegisterPsWebApi(this HttpConfiguration config, PSConfiguration psConfiguration = null, IEnumerable<MediaTypeHeaderValue> mediaTypes = null)
 		{
 			if (config.Properties.ContainsKey(_RegisteredPropertyKey))
 				throw new InvalidOperationException("Registered PSWebApi Repeatedly");
 
-			config.Formatters.Insert(0, new PSMediaTypeFormatter(psConfiguration));
+			PSMediaTypeFormatter psMediaTypeFormatter = new PSMediaTypeFormatter(psConfiguration);
+			config.Formatters.Insert(0, psMediaTypeFormatter);
 			config.Formatters.Insert(1, new CmdMediaTypeFormatter(mediaTypes));
 
 			config.Properties.TryAdd(_RegisteredPropertyKey, true);
+
+			return psMediaTypeFormatter.Configuration;
 		}
 
 		/// <summary>
