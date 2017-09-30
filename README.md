@@ -1,7 +1,8 @@
 # PS-WebApi
 -- -- -- -- -- -- -- -- -- -- -- -- Let any PowerShell Script or command-line process serve as WebAPI.
 
-PSWebApi is a simple library for turning PowerShell Scripts or batch/executable files into ASP.NET Web APIs (RESTful Services) out of the box.
+PSWebApi is a simple library for turning PowerShell Scripts or batch/executable files into ASP.NET Web APIs (RESTful Services) out of the box.  
+With a PSWebApi Server, you can implement RESTful Services by PowerShell Scripts or batch/executable files.
 
 ## Overview
 
@@ -35,7 +36,7 @@ The PS-WebApi is coming out for the seamless integration between script-based mo
 
 ## Server Setup
 
-[PSWebApi.OwinSample](https://github.com/DataBooster/PS-WebApi/tree/master/sample/PSWebApi.OwinSample) is a Quick Start Example, it can be used as a scaffold for customizing your own PS-WebApi service.
+[PSWebApi.OwinSample](https://github.com/DataBooster/PS-WebApi/tree/master/sample/PSWebApi.OwinSample) is a Quick Start Example, it can be used as a scaffold for customizing your own PS-WebApi Server.
 
 The main controller [PSWebApiController](https://github.com/DataBooster/PS-WebApi/blob/master/sample/PSWebApi.OwinSample/Controllers/PSWebApiController.cs) shows how to use the two main extension methods `this.InvokePowerShell(script.LocalFullPath(), allParameters)` and `this.InvokeCmd(script.LocalFullPath(), allArguments, ConfigHelper.CmdTimeoutSeconds)` brought from nugget package https://www.nuget.org/packages/DataBooster.PSWebApi. You can leave this controller as it is if no need to enhance at present.
 
@@ -257,6 +258,17 @@ For examples,
     `She's 5'5" tall.`  
     will be encoded/escaped as  
     `"She's 5'5"" tall."`
+
+3. Standard-Input Redirection  
+Many console applications read larger data from Standard-Input, such as SORT.EXE command. To call such executable/batch application, the Content-Type header of your HTTP request must be specified as any one of following media types:
+    - application/stdin
+    - text/stdin
+    - application/standardinput
+    - text/standardinput
+    - application/redirectstandardinput
+    - text/redirectstandardinput
+
+    So that, PSWebApi knows that the standard input of the console application (or batch) needs to be redirected from the entire text of the request body.
 
 ## Conventions
 #### HTTP status of PowerShell response
