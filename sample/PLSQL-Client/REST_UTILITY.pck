@@ -75,9 +75,9 @@ BEGIN
 			UTL_HTTP.READ_TEXT(httpResp, respBuffer, bufferLen);
 			respClob	:= respClob || respBuffer;
 		END LOOP;
-		EXCEPTION
-			WHEN UTL_HTTP.END_OF_BODY THEN
-				UTL_HTTP.END_RESPONSE(httpResp);
+	EXCEPTION
+		WHEN UTL_HTTP.END_OF_BODY THEN
+			UTL_HTTP.END_RESPONSE(httpResp);
 	END;
 
 	RETURN respClob;
